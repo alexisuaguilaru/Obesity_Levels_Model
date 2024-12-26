@@ -8,10 +8,12 @@ The model uses clustering algorithms for estimating the probability of belonging
 
 # Project Overview
 ## Exploratory Data Analysis (EDA)
-An EDA was performed to determine and know some characteristics of the dataset to give a preliminary analysis of the behavior (accuracy, performance) of the model. 
+An EDA was performed to determine and know some characteristics of the dataset to give a preliminary analysis of the behavior (accuracy) of the model. 
+
+The justification of why using different sub-models could improve the accuracy of the final model was also shown, mainly based on the overlap of the classes on the dimensions of weight and height. 
 
 ## Model Overview
-Three sub-models are used to estimate the probabilities of belonging to each type of obesity: the first sub-model estimates those of belonging to Insufficient Weight, Normal Weight, Overweight and Obesity; the second, those to type of Overweight; and the third, those to type of Obesity.
+Four sub-models are used to estimate the probabilities of belonging to each type of obesity: the first sub-model estimates those of belonging to Insufficient-Normal Weight, Overweight and Obesity; the second, those to Insufficient and Normal weight; the third, those to type of Overweight; and the fourth, those to type of Obesity.
 
 # References
 - [1] Estimation of Obesity Levels Based On Eating Habits and Physical Condition, UCI Machine Learning Repository, DOI: https://doi.org/10.24432/C5H31Z, 2019.
