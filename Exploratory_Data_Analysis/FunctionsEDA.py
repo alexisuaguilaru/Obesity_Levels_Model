@@ -55,3 +55,15 @@ def PlotHistogramBox_Hue(Dataset:pd.DataFrame,Feature:str,Hue:str,Hue_Order=list
     fig , axes = plt.subplots(1,2,figsize=(15,5))
     sns.kdeplot(Dataset,x=Feature,ax=axes[0],hue=Hue,hue_order=Hue_Order,fill=True,palette='Set2')
     sns.boxplot(Dataset,x=Feature,ax=axes[1],hue=Hue,hue_order=Hue_Order,palette='Set2')
+
+def RenameColumnLabels(OldLabels:list[str],NewLabels:list[str]):
+    """
+        Function to rename a subset of columns labels and to return 
+        the new dataframe
+    """
+    mapFeatures = dict(zip(OldLabels,NewLabels))
+    def ApplyRename(Dataset:pd.DataFrame):
+        datasetRelabeled = Dataset[OldLabels].copy(deep=True)
+        return datasetRelabeled.rename(columns=mapFeatures)
+
+    return ApplyRename
