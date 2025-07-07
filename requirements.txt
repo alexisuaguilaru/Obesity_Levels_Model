@@ -1,0 +1,9 @@
+# Python >= 3.13.0 
+
+marimo >= 0.14.0
+pyarrow >= 20.0.0
+
+
+pandas >= 2.3.0
+seaborn >= 0.13.2
+scipy >= 1.15.3
