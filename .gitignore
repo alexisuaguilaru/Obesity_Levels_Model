@@ -1,5 +1,6 @@
 __pycache__
 __pytest__
+__marimo__
 
 *.ipynb
 *.txt
