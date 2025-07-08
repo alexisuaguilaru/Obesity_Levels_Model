@@ -55,3 +55,71 @@ def CapitalizeYesNoValues(
         return Value.capitalize()
     else:
         return Value
+
+def EncodeBinaryValue(
+        BinValue: str,
+    ) -> int:
+    """
+    Function for encoding 
+    binary (`no`, `yes`) values
+
+    Parameter
+    ---------
+    BinValue: str
+        Binary value to encode
+
+    Return
+    ------
+    Encoded_BinValue: int
+        Encoded binary value
+    """
+
+    return int(BinValue[0] == 'Y')
+
+Frequencies = ['No','Sometimes','Frequently','Always']
+MapFrequencyValue = {frequency:value for value , frequency in enumerate(Frequencies)}
+def EncodeFrequencyValue(
+        FreqValue: str,
+    ) -> int:
+    """
+    Function for encoding 
+    frequencies 
+
+    Parameter
+    ---------
+    FreqValue: str
+        Frequency value
+
+    Return
+    ------
+    Encoded_FreqValue: int
+        Encoded frequency value
+    """
+
+    return MapFrequencyValue[FreqValue]
+
+ObesityLevels = [
+    'Insufficient_Weight','Normal_Weight',
+    'Overweight_Level_I','Overweight_Level_II',
+    'Obesity_Type_I','Obesity_Type_II','Obesity_Type_III'
+]
+MapObesityLevel = {obesity:level for level , obesity in enumerate(ObesityLevels)}
+def EncodeObesityLevel(
+        ObesityLevel: str,
+    ) -> int:
+    """
+    Function for encoding 
+    obesity levels
+
+    Parameter
+    ---------
+    ObesityLevel: str
+        Obesity level to encode
+
+    Return
+    ------
+    Encoded_ObesityLevel: int
+        Encoded obesity level
+    """
+
+    return MapObesityLevel[ObesityLevel]

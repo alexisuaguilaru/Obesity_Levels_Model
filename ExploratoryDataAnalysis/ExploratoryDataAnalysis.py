@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.14.9"
-app = marimo.App()
+app = marimo.App(width="medium")
 
 
 @app.cell
@@ -49,7 +49,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"## 1. First Exploration")
+    mo.md(r"# 1. First Exploration")
     return
 
 
@@ -158,6 +158,92 @@ def _(CategoricalFeatures, ObesityDataset_Raw_1, ObesityLevel, mo):
         [
             mo.md("Number of Instances by **Obesity Level**"),
             ObesityDataset_Raw_1.groupby(ObesityLevel)[CategoricalFeatures[0]].count(),
+        ]
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        When observing the values taken by some of the categorical features, it can be determined that they have ordinal behavior (their values are frequencies) or binary (their values are `yes` or `no`); therefore, they can be encoded without losing their sense or meaning. In addition, the feature that represents the target, `NObeyesdad`, can also be associated with an order because its values represent how obesity increases and scales in an individual.
+    
+        Finally, the feature `IBM` (Body Mass Index) is added, which represents one of the main and most widely used measures to describe health condition and is directly related to the level of obesity of a person.
+        """
+    )
+    return
+
+
+@app.cell
+def _():
+    # Defining auxiliar variables (feature names)
+
+    ## Numerical features
+    Age = 'Age'
+    Height = 'Height'
+    Weight = 'Weight'
+    FCVC = 'FCVC'
+    NCP = 'NCP'
+    CH2O = 'CH2O'
+    FAF = 'FAF'
+    TUE = 'TUE'
+
+    ## Nominal features
+    Gender = 'Gender'
+    MTRANS = 'MTRANS'
+
+    ## Binary features
+    FamilyOverweight = 'family_history_with_overweight'
+    FAVC = 'FAVC'
+    SMOKE = 'SMOKE'
+    SCC = 'SCC'
+
+    ## Frequency features
+    CAEC = 'CAEC'
+    CALC = 'CALC'
+    return CAEC, CALC, FAVC, FamilyOverweight, Height, SCC, SMOKE, Weight
+
+
+@app.cell
+def _(
+    CAEC,
+    CALC,
+    FAVC,
+    FamilyOverweight,
+    Height,
+    ObesityDataset_Raw_1,
+    ObesityLevel,
+    SCC,
+    SMOKE,
+    Weight,
+    src,
+):
+    ObesityDataset_1 = ObesityDataset_Raw_1.copy()
+
+
+    # Feature Encoding 
+    _BinFeatures = [FamilyOverweight,FAVC,SMOKE,SCC]
+    ObesityDataset_1[_BinFeatures] = ObesityDataset_1[_BinFeatures].map(src.EncodeBinaryValue)
+
+    _FreqFeatures = [CAEC,CALC]
+    ObesityDataset_1[_FreqFeatures] = ObesityDataset_1[_FreqFeatures].map(src.EncodeFrequencyValue)
+
+    ObesityDataset_1[[ObesityLevel]] = ObesityDataset_1[[ObesityLevel]].map(src.EncodeObesityLevel)
+
+    # Adding feature 
+    BMI = 'BMI'
+    ObesityDataset_1[BMI] = ObesityDataset_1[Weight] / (ObesityDataset_1[Height]**2)
+    return (ObesityDataset_1,)
+
+
+@app.cell
+def _(ObesityDataset_1, ObesityLevel, RANDOM_STATE, mo):
+    _Sample = ObesityDataset_1.groupby(ObesityLevel).sample(2,random_state=RANDOM_STATE)
+    mo.vstack(
+        [
+            mo.md("**Examples of Instances After Transformation**"),
+            _Sample,
         ]
     )
     return
