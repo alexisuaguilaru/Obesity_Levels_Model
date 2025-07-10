@@ -32,7 +32,7 @@ def SummaryStatisticsFeature(
         DataFrame with the summarized data
     """
 
-    Summary = Dataset.groupby(CategoryFeature)[SummaryFeature].describe()[['mean','std','50%']]
+    Summary = Dataset.groupby(CategoryFeature)[SummaryFeature].describe()[['mean','std','25%','50%','75%']]
     Summary.rename(index=RenameCategory,inplace=True)
     Summary.rename_axis(index=NameCategory,inplace=True)
 
