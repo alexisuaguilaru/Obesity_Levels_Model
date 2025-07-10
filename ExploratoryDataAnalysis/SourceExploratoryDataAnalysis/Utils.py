@@ -56,6 +56,7 @@ def CapitalizeYesNoValues(
     else:
         return Value
 
+MapValueBinary = {value:binary for value , binary in enumerate(['No','Yes'])}
 def EncodeBinaryValue(
         BinValue: str,
     ) -> int:
@@ -104,6 +105,7 @@ ObesityLevels = [
     'Obesity_Type_I','Obesity_Type_II','Obesity_Type_III'
 ]
 MapObesityLevel = {obesity:level for level , obesity in enumerate(ObesityLevels)}
+MapLevelObesity = {level:obesity for level , obesity in enumerate(ObesityLevels)}
 def EncodeObesityLevel(
         ObesityLevel: str,
     ) -> int:
