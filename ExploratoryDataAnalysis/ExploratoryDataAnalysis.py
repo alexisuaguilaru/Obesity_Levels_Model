@@ -317,9 +317,42 @@ def _(BMI, ObesityDataset_1, ObesityLevel, src, stats):
             _Sample_1,
             _Sample_2,
             equal_var=False,
-            alternative='less'
+            alternative='less',
         )
         print(f'{src.MapLevelObesity[_level_1]:<20} < {src.MapLevelObesity[_level_2]:<20} :: {'Yes' if _result.pvalue < 0.01 else 'No'}')
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"## 2.2. Family History With Overweight")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        A fact that is common when a patient suffers from obesity is that the patient's family circle also suffers from it, this can be shown by observing that there is a positive trend between the complexity of obesity and the number of cases where they have a family member with obesity. This fact becomes evident when considering the plot, where two considerable biases are appreciated, that is, a patient who does not have overweight relatives tends not to have a high level of obesity and if he/she does, he/she tends to have a high level of obesity.
+    
+        The above observations allow to describe `family_history_with_overweight` as a risk factor that does not have a direct impact or strong influence, but rather allows to observe the health condition of the family circle and what one might observe in it.
+        """
+    )
+    return
+
+
+@app.cell
+def _(FamilyOverweight, ObesityDataset_1, src):
+    src.SummaryCategoricalFeature(
+        ObesityDataset_1,
+        FamilyOverweight,
+    )
+    return
+
+
+@app.cell
+def _(ObesityDataset_1, src):
+    src.PlotRelativesWithOverweight(ObesityDataset_1)
     return
 
 

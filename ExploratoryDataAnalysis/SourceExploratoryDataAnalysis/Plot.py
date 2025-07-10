@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
-from .Utils import MapObesityLevel
+from .Utils import *
+from .Base import *
 
 import pandas as pd
 from matplotlib.figure import Figure
@@ -19,7 +21,7 @@ def PlotFeatureOverCategories(
     ) -> Figure:
     """
     Function for plotting the distribution 
-    of a numerical feature along a 
+    of a numerical feature over a 
     categorical feature
 
     Parameters
@@ -57,6 +59,41 @@ def PlotFeatureOverCategories(
         ax=axes,
     )
     SetLabelAxisNames(axes,f'Distribution of {FeatureName}',FeatureName,CategoryName)
+
+    return fig
+
+def PlotRelativesWithOverweight(
+    Dataset: pd.DataFrame,
+    ) -> Figure:
+    """
+    Function for plotting the distribution 
+    of `family_history_with_overweight` 
+    feature over `NObeyesdad`
+
+    Parameter
+    ---------
+    Dataset: pd.DataFrame
+        Dataset which is plotted
+
+    Return
+    ------
+    PlotDistribution : Figure
+        Figure with the distribution plot 
+    """
+
+    fig , axes = plt.subplots()
+
+    sns.countplot(
+        Dataset,
+        x=ObesityLevel,
+        hue=FamilyOverweight,
+        ax=axes,
+        palette=['#33D74B','#D10537']
+    )
+
+    SetLabelAxisNames(axes,'Distribution of Relatives with Overweight','Obesity Level','Count')
+    axes.set_xticks(np.arange(7),MapLevelObesity.values(),rotation=45)
+    axes.legend(title='Relatives with\nOverweight',labels=['No','Yes'])
 
     return fig
 
