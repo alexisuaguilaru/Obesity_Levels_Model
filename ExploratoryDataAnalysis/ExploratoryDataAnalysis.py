@@ -203,7 +203,7 @@ def _():
     ## Frequency features
     CAEC = 'CAEC'
     CALC = 'CALC'
-    return CAEC, CALC, FAVC, FamilyOverweight, Height, SCC, SMOKE, Weight
+    return CAEC, CALC, FAF, FAVC, FamilyOverweight, Height, SCC, SMOKE, Weight
 
 
 @app.cell
@@ -353,6 +353,62 @@ def _(FamilyOverweight, ObesityDataset_1, src):
 @app.cell
 def _(ObesityDataset_1, src):
     src.PlotRelativesWithOverweight(ObesityDataset_1)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"## 2.3. Physical Activity")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The frequency and the amount of hours of physical activity become factors that allow to combat and reduce obesity in a person, therefore it becomes a habit that is constantly promoted. To show how physical activity influences the level of obesity, a decrease should be observed as obesity increases.
+    
+        When considering the medians in the different levels, it can be appreciated that there is no uniform or noticeable decrease, only in the extreme levels these decrements can be appreciated. But there is a bias that allows a better evaluation of this phenomenon, most of the levels (except for Obesity Type III) have a negative bias, this could be an indication of a promotion of physical activity among these groups and that part of the population tries to perform this physical activation. This impacts on a reduction of obesity over time and, in general, a concern or interest in having a healthy life.
+    
+        Although there is a tendency to do physical activity, there is still a high variance in each group, which means that not all individuals or patients follow the suggestion to do physical activity, so there is the possibility of encouraging it and increasing the time invested in health care.
+        """
+    )
+    return
+
+
+@app.cell
+def _(FAF, ObesityDataset_1, src):
+    src.SummaryStatisticsFeature(
+        ObesityDataset_1,
+        FAF,
+    )
+    return
+
+
+@app.cell
+def _(FAF, ObesityDataset_1, ObesityDataset_Raw_1, ObesityLevel, src):
+    src.PlotFeatureOverCategories(
+        ObesityDataset_1,
+        FAF,
+        ObesityDataset_Raw_1[ObesityLevel],
+        FeatureName='Frequency of\nPhysical Activity',
+        CategoryName='Obesity Level',
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"Omitting the extreme cases (Insufficient Weight and Obesity Type III) that follow the trend of decreasing physical activity as obesity increases, there remain the levels where apparently no clear trend is shown. Using the [Spearman Rank-Order Correlation Coefficient](https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient) it can be shown that in these levels the correlation is not strong although its p-value is significant; this could indicate that the effect of physical activity is not appreciable, that is, there is a similar number of cases that follow the trend as those that do not follow it and the overall effect becomes negligible.")
+    return
+
+
+@app.cell
+def _(FAF, ObesityDataset_1, ObesityLevel, stats):
+    _Data = ObesityDataset_1[[FAF,ObesityLevel]].query(f'0 < {ObesityLevel} < 6')
+    _Result = stats.spearmanr(_Data[FAF],_Data[ObesityLevel],alternative='less')
+
+    print(f'Spearman Correlation Coefficient :: {_Result.statistic}\nP Value :: {_Result.pvalue}')
     return
 
 
