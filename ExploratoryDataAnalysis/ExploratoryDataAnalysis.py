@@ -254,7 +254,7 @@ def _(ObesityDataset_1, ObesityLevel, RANDOM_STATE, mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"# 2. Univariate Analysis")
+    mo.md(r"# 2. Data Analysis")
     return
 
 
@@ -343,16 +343,21 @@ def _(mo):
 
 @app.cell
 def _(FamilyOverweight, ObesityDataset_1, src):
-    src.SummaryCategoricalFeature(
+    PivotFamilyOverweight = src.SummaryCategoricalFeature(
         ObesityDataset_1,
         FamilyOverweight,
     )
-    return
+
+    PivotFamilyOverweight
+    return (PivotFamilyOverweight,)
 
 
 @app.cell
-def _(ObesityDataset_1, src):
-    src.PlotRelativesWithOverweight(ObesityDataset_1)
+def _(PivotFamilyOverweight, src):
+    src.PlotPivotTable(
+        PivotFamilyOverweight,
+        'Relatives\nwith Overweight',
+    )
     return
 
 
@@ -409,6 +414,52 @@ def _(FAF, ObesityDataset_1, ObesityLevel, stats):
     _Result = stats.spearmanr(_Data[FAF],_Data[ObesityLevel],alternative='less')
 
     print(f'Spearman Correlation Coefficient :: {_Result.statistic}\nP Value :: {_Result.pvalue}')
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"## 2.4. High Caloric Food")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The consumption of high calorie foods is associated with obesity because they are non nutritious or ultra-processed foods. Therefore, the more they are consumed, the greater the likelihood of developing obesity or health problems. This can be shown by considering the trend of consumption, where as the complexity of obesity advances, the likelihood or consumption of high-calorie foods increases.
+    
+        When determining the coefficient of correspondence or association ($D = 0.4458$), it is shown that the association is significant and notable, therefore there is statistical evidence to indicate that the consumption of high calorie foods increases with the increase in the level of obesity. In other words, people with a higher obesity index tend to consume high-calorie foods frequently.
+        """
+    )
+    return
+
+
+@app.cell
+def _(FAVC, ObesityDataset_1, src):
+    PivotFAVC = src.SummaryCategoricalFeature(
+        ObesityDataset_1,
+        FAVC,
+    )
+
+    PivotFAVC
+    return (PivotFAVC,)
+
+
+@app.cell
+def _(PivotFAVC, src):
+    src.PlotPivotTable(
+        PivotFAVC,
+        'High Caloric Food',
+    )
+    return
+
+
+@app.cell
+def _(FAVC, ObesityDataset_1, ObesityLevel, stats):
+    _Result = stats.somersd(ObesityDataset_1[FAVC],ObesityDataset_1[ObesityLevel])
+
+    print(f'Somers Correspondence Coefficient :: {_Result.statistic}\nP Value :: {_Result.pvalue}')
     return
 
 

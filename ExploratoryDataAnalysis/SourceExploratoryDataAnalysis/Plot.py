@@ -62,40 +62,38 @@ def PlotFeatureOverCategories(
 
     return fig
 
-def PlotRelativesWithOverweight(
-    Dataset: pd.DataFrame,
-    ) -> Figure:
+def PlotPivotTable(
+        PivotTable: pd.DataFrame,
+        Title: str,
+        LabelsLegend: list[str] = ['No','Yes'],
+    ):
     """
     Function for plotting the distribution 
-    of `family_history_with_overweight` 
-    feature over `NObeyesdad`
+    the results of a pivot table
 
     Parameter
     ---------
-    Dataset: pd.DataFrame
-        Dataset which is plotted
+    PivotTable: pd.DataFrame
+        Pivot table which is plotted
+    Title: str
+        Plot and legend title
+    LabelsLegend: list[str]
+        Label values for legend
 
     Return
     ------
-    PlotDistribution : Figure
-        Figure with the distribution plot 
+    Plot : Figure
+        Figure with the plot
     """
 
-    fig , axes = plt.subplots()
-
-    sns.countplot(
-        Dataset,
-        x=ObesityLevel,
-        hue=FamilyOverweight,
-        ax=axes,
-        palette=['#33D74B','#D10537']
+    axes = PivotTable.plot(
+        kind='bar',
+        color=['#33D74B','#D10537'],
     )
+    SetLabelAxisNames(axes,f'Distribution of {Title}',axes.get_xlabel(),'Count')
+    axes.legend(title=Title,labels=LabelsLegend)
 
-    SetLabelAxisNames(axes,'Distribution of Relatives with Overweight','Obesity Level','Count')
-    axes.set_xticks(np.arange(7),MapLevelObesity.values(),rotation=45)
-    axes.legend(title='Relatives with\nOverweight',labels=['No','Yes'])
-
-    return fig
+    return axes
 
 def SetLabelAxisNames(
         Axes: Axes,
