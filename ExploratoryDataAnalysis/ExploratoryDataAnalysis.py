@@ -260,6 +260,20 @@ def _(mo):
 
 @app.cell
 def _(mo):
+    mo.md(
+        r"""
+        This section analyzes the impact of certain factors (attributes) on the level of obesity, where it is shown that BMI is the main attribute that determines the obesity status of a person and that together with other factors, the obesity status of a person could be determined with greater precision.
+    
+        From the analysis carried out, it can be synthesized that an individual's obesity is mainly determined by the actions and decisions he/she makes, as well as by the influence of his/her environment (such as access to ultra-processed products and overweight family members); therefore, obesity is considered to be a multifactorial disease where the interaction of several circumstances leads to the manifestation of a certain state of health in a person.
+    
+        Although not all the other factors were analyzed, it could be suggested that their influence is less or equal to the factors considered here, because, as mentioned, BMI is the attribute that has the highest weighting when rating the level of obesity in a person (this is shown at a practical level, as it is widely used by doctors, as well as by the statistical analysis performed).
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
     mo.md(r"## 2.1.Body Mass Index (BMI)")
     return
 
