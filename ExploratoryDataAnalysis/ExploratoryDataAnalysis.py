@@ -15,6 +15,7 @@ def _():
     import pandas as pd
     import numpy as np
     from scipy import stats
+    from statsmodels.multivariate.factor import Factor
 
     import seaborn as sns
     import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ def _():
     # Importing Functions and Utils
 
     import SourceExploratoryDataAnalysis as src
-    return mo, pd, src, stats
+    return Factor, mo, np, pd, src, stats
 
 
 @app.cell
@@ -203,7 +204,19 @@ def _():
     ## Frequency features
     CAEC = 'CAEC'
     CALC = 'CALC'
-    return CAEC, CALC, FAF, FAVC, FamilyOverweight, Height, SCC, SMOKE, Weight
+    return (
+        CAEC,
+        CALC,
+        FAF,
+        FAVC,
+        FamilyOverweight,
+        Gender,
+        Height,
+        MTRANS,
+        SCC,
+        SMOKE,
+        Weight,
+    )
 
 
 @app.cell
@@ -474,6 +487,48 @@ def _(FAVC, ObesityDataset_1, ObesityLevel, stats):
     _Result = stats.somersd(ObesityDataset_1[FAVC],ObesityDataset_1[ObesityLevel])
 
     print(f'Somers Correspondence Coefficient :: {_Result.statistic}\nP Value :: {_Result.pvalue}')
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 3. Factor Analysis")
+    return
+
+
+@app.cell
+def _(Gender, MTRANS, ObesityDataset_1, ObesityLevel, src):
+    # Applying auxiliar encodings to features
+
+    MTRANS_Encode = 'MTRANS_'+src.TransportationMethods
+    ObesityDataset_2 = ObesityDataset_1.copy(deep=True)
+
+    ObesityDataset_2[Gender] = ObesityDataset_2[Gender].map(src.EncodeGenderValue)
+    ObesityDataset_2[[*MTRANS_Encode]] = [*ObesityDataset_2[MTRANS].map(src.EncodeMTransValue)]
+    ObesityDataset_2.drop(columns=[MTRANS,ObesityLevel],inplace=True)
+    return (ObesityDataset_2,)
+
+
+@app.cell
+def _(Factor, ObesityDataset_2):
+    # Calculating loadings and scores of FA
+
+    Num_Factors = 3
+    FactorAnalysis = Factor(ObesityDataset_2.to_numpy(),Num_Factors)
+    FactorAnalysisResults = FactorAnalysis.fit()
+    return FactorAnalysis, Num_Factors
+
+
+@app.cell
+def _(FactorAnalysis, Num_Factors, ObesityDataset_2, np):
+    # Relevant features in each factor
+
+    for _factor in range(Num_Factors):
+        _filter_loadings = np.abs(FactorAnalysis.loadings[:,_factor])>0.5
+    
+        print(f'\nFactor {_factor+1} ::')
+        for _feature , _load in zip(ObesityDataset_2.columns[_filter_loadings],FactorAnalysis.loadings[_filter_loadings,_factor]):
+            print(f'{_feature} {_load:.4f}')
     return
 
 

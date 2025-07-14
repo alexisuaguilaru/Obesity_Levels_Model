@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def SplitFeatures(
         Dataset: pd.DataFrame,
@@ -125,3 +126,44 @@ def EncodeObesityLevel(
     """
 
     return MapObesityLevel[ObesityLevel]
+
+def EncodeGenderValue(
+        GenderValue: str,
+    ) -> int:
+    """
+    Function for encoding 
+    gender
+
+    Parameter
+    ---------
+    GenderValue: str
+        Gender value to encode
+
+    Return
+    ------
+    Encoded_GenderValue: int
+        Encoded gender value
+    """
+
+    return int(GenderValue[0] == 'M')
+
+TransportationMethods = np.array(['Public_Transportation', 'Walking', 'Automobile', 'Motorbike','Bike'])
+def EncodeMTransValue(
+        MTransValue: str,
+    ) -> np.ndarray:
+    """
+    Function for one hot 
+    encoding of MTRANS values 
+
+    Parameter
+    ---------
+    MTransValue: str
+        MTRANS value to encode
+
+    Return
+    ------
+    OneHotEncoded_MTransValue: np.ndarray
+        OHE of MTRANS value
+    """
+    
+    return (TransportationMethods == MTransValue).astype(int) 
