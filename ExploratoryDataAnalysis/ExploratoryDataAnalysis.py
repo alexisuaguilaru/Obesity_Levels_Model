@@ -497,6 +497,24 @@ def _(mo):
 
 
 @app.cell
+def _(mo):
+    mo.md(
+        r"""
+        When considering the first three factors, it is found that they allow to explain with greater understanding some of the attributes considered in [Data Analysis](#2-data-analysis). The following results show that the indicated attributes have a loading score greater than $0.5$ in absolute value:
+    
+        * Factor 1 [`Height`, `Weight`, `family_history_with_overweight`, `BMI`] focus on attributes related to the individual's physical condition and which are the main factors determining a person's level of obesity by considering that all relevant attributes have a positive loading on the factor. The latter can be contrasted by considering the [BMI analysis](#21body-mass-index-bmi).
+    
+        * Factor 2 [`Age`, `MTRANS_Public_Transportation`, `MTRANS_Automobile`] concerns the means of transportation aspect, where the use of public transportation and automobiles are in opposite directions, because the use of one determines, to some extent, the economic position of a person and his or her access to certain means of transportation. This factor is not relevant to the discussion concerning the level of obesity.
+    
+        * Factor 3 [`Gender`, `Height`] represents the phenomenon that men tend to be taller than women. Although height does play a relevant role in determining the level of obesity, it is not the only thing, so this factor remains more of a confirmation or statistical proof of a known fact in medicine.
+    
+        Of the factors studied, the first one concentrated most of the relevant information for the study, because its attributes allow explaining why a person is at a certain level of obesity, not only considering his/her weight and height but also his/her environment (close family with overweight).
+        """
+    )
+    return
+
+
+@app.cell
 def _(Gender, MTRANS, ObesityDataset_1, ObesityLevel, src):
     # Applying auxiliar encodings to features
 
@@ -525,10 +543,16 @@ def _(FactorAnalysis, Num_Factors, ObesityDataset_2, np):
 
     for _factor in range(Num_Factors):
         _filter_loadings = np.abs(FactorAnalysis.loadings[:,_factor])>0.5
-    
+
         print(f'\nFactor {_factor+1} ::')
         for _feature , _load in zip(ObesityDataset_2.columns[_filter_loadings],FactorAnalysis.loadings[_filter_loadings,_factor]):
             print(f'{_feature} {_load:.4f}')
+    return
+
+
+@app.cell
+def _(FactorAnalysis, ObesityDataset_2, src):
+    src.PlotFactorAnalysisLoadings(FactorAnalysis.loadings,ObesityDataset_2.columns)
     return
 
 

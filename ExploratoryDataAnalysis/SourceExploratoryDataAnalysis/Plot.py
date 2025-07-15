@@ -45,7 +45,7 @@ def PlotFeatureOverCategories(
         Figure with the distribution plot 
     """
 
-    fig , axes = plt.subplots()
+    fig , axes = plt.subplots(subplot_kw={'frame_on':False})
 
     sns.boxplot(
         Dataset,
@@ -66,7 +66,7 @@ def PlotPivotTable(
         PivotTable: pd.DataFrame,
         Title: str,
         LabelsLegend: list[str] = ['No','Yes'],
-    ):
+    ) -> Figure:
     """
     Function for plotting the distribution 
     the results of a pivot table
@@ -86,14 +86,16 @@ def PlotPivotTable(
         Figure with the plot
     """
 
-    axes = PivotTable.plot(
+    fig , axes = plt.subplots(subplot_kw={'frame_on':False})
+    PivotTable.plot(
         kind='bar',
         color=['#33D74B','#D10537'],
+        ax=axes,
     )
     SetLabelAxisNames(axes,f'Distribution of {Title}',axes.get_xlabel(),'Count')
     axes.legend(title=Title,labels=LabelsLegend)
 
-    return axes
+    return fig
 
 def SetLabelAxisNames(
         Axes: Axes,
@@ -122,3 +124,52 @@ def SetLabelAxisNames(
     if YLabel: Axes.set_ylabel(YLabel,size=12)
 
     Axes.tick_params(axis='both',labelsize=11)
+
+def PlotFactorAnalysisLoadings(
+        Loadings: np.ndarray,
+        Labels: list[str],
+        Threshold: float = 0.5,
+    ) -> Figure:
+    """
+    Function for generating the 
+    loading factor plot using the 
+    first two factors
+
+    Parameters
+    ----------
+    Loadings: np.ndarray
+        Loadings of each factor
+    Labels: list[str]
+        Feature names
+    Threshold: float
+        Threshold for relevant feature
+
+    Return
+    ------
+    PlotLoadingFactor : Figure
+        Figure of loading factor plot with relevant features 
+    """
+
+    fig , axes = plt.subplots(subplot_kw={'frame_on':False})
+    relevant_features_index = np.any(np.abs(Loadings[:,:2]) > Threshold,axis=1)
+    relevant_loadings = Loadings[relevant_features_index]
+
+    sns.scatterplot(
+        x=relevant_loadings[:,0],
+        y=relevant_loadings[:,1],
+        s=np.ones((relevant_loadings.shape[0],))*72,
+        color=BASE_COLOR,
+        alpha=0.75,
+        legend=False,
+        ax=axes,
+    )
+    for position , feature_name in zip(relevant_loadings,Labels[relevant_features_index]):
+        axes.annotate(
+            feature_name,
+            position[:2],
+            size=11,
+        )
+
+    SetLabelAxisNames(axes,'Loading Factor\nRelevant Features','Factor 1','Factor 2')
+
+    return fig
