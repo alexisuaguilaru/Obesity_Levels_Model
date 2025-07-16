@@ -17,6 +17,13 @@ def _():
     from scipy import stats
     from statsmodels.multivariate.factor import Factor
 
+    from sklearn.pipeline import Pipeline
+    from sklearn.compose import ColumnTransformer
+    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.decomposition import PCA
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+
     import seaborn as sns
     import matplotlib.pyplot as plt
 
@@ -24,7 +31,22 @@ def _():
     # Importing Functions and Utils
 
     import SourceExploratoryDataAnalysis as src
-    return Factor, mo, np, pd, src, stats
+    return (
+        ColumnTransformer,
+        Factor,
+        KMeans,
+        MinMaxScaler,
+        PCA,
+        Pipeline,
+        mo,
+        np,
+        pd,
+        plt,
+        silhouette_score,
+        sns,
+        src,
+        stats,
+    )
 
 
 @app.cell
@@ -100,6 +122,7 @@ def _(PATH_DATASET, pd):
     # Loading dataset
 
     ObesityDataset_Raw_0 = pd.read_csv(PATH_DATASET.format(''),engine='python')
+    ObesityDataset_Raw_0.columns = ObesityDataset_Raw_0.columns.astype(str)
     return (ObesityDataset_Raw_0,)
 
 
@@ -518,7 +541,7 @@ def _(mo):
 def _(Gender, MTRANS, ObesityDataset_1, ObesityLevel, src):
     # Applying auxiliar encodings to features
 
-    MTRANS_Encode = 'MTRANS_'+src.TransportationMethods
+    MTRANS_Encode = list(map(str,'MTRANS_'+src.TransportationMethods))
     ObesityDataset_2 = ObesityDataset_1.copy(deep=True)
 
     ObesityDataset_2[Gender] = ObesityDataset_2[Gender].map(src.EncodeGenderValue)
@@ -553,6 +576,79 @@ def _(FactorAnalysis, Num_Factors, ObesityDataset_2, np):
 @app.cell
 def _(FactorAnalysis, ObesityDataset_2, src):
     src.PlotFactorAnalysisLoadings(FactorAnalysis.loadings,ObesityDataset_2.columns)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 4. Cluster Analysis")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"")
+    return
+
+
+@app.cell
+def _(
+    ColumnTransformer,
+    KMeans,
+    MinMaxScaler,
+    NumericalFeatures,
+    PCA,
+    Pipeline,
+    RANDOM_STATE,
+):
+    # Defining clustering with preprocessing pipeline
+
+    PreprocessingFeatures = ColumnTransformer(
+        [
+            ('Normalization',MinMaxScaler(),NumericalFeatures)
+        ],
+        remainder='passthrough',
+    )
+
+    components = 4
+    ClusteringAnalysis = Pipeline(
+        [
+            ('Preprocessing',PreprocessingFeatures),
+            ('DimensionalReduction',PCA(n_components=components,random_state=RANDOM_STATE)),
+            ('Clustering',KMeans(n_clusters=3,random_state=RANDOM_STATE)),
+        ]
+    )
+
+    ClusteringAnalysis
+    return ClusteringAnalysis, components
+
+
+@app.cell
+def _(ClusteringAnalysis, ObesityDataset_2, silhouette_score):
+    labels = ClusteringAnalysis.fit_predict(ObesityDataset_2)
+    data_trans = ClusteringAnalysis[:2].transform(ObesityDataset_2)
+
+    silhouette_score(data_trans,labels)
+    return data_trans, labels
+
+
+@app.cell
+def _(components, data_trans, labels, plt, sns):
+    from itertools import combinations
+
+    _fig , _axes = plt.subplots(3,2,figsize=(10,15))
+    _axes = _axes.ravel()
+
+    for _id_ax , (_id_x , _id_y) in enumerate(combinations(range(components),2)):
+        sns.scatterplot(
+            x=data_trans[:,_id_x],
+            y=data_trans[:,_id_y],
+            hue=labels,
+            ax=_axes[_id_ax],
+            legend=False,
+        )
+
+    _fig
     return
 
 
