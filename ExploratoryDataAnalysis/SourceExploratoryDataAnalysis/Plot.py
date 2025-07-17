@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from itertools import combinations
 
 from .Utils import *
 from .Base import *
@@ -171,5 +172,48 @@ def PlotFactorAnalysisLoadings(
         )
 
     SetLabelAxisNames(axes,'Loading Factor\nRelevant Features','Factor 1','Factor 2')
+
+    return fig
+
+def PlotClusterAnalysis(
+        TransformedDataset: np.ndarray,
+        LabelsClusters: np.ndarray,
+    ) -> Figure:
+    """
+    Function for generating the 
+    principal component plot using 
+    the first four PC
+
+    Parameters
+    ----------
+    TransformedDataset: np.ndarray
+        Dataset transformed with PCA
+    LabelsClusters: np.ndarray
+        Cluster label of each instance
+
+    Return
+    ------
+    PlotPrincipalComponents : Figure
+        Figure of principal components plot with relevant PC 
+    """    
+
+    fig , axes = plt.subplots(3,2,figsize=(10,15))
+    axes = axes.ravel()
+
+    for id_axex , (pc_x , pc_y) in enumerate(combinations(range(4),2)):
+        axes_plot = axes[id_axex]
+        sns.scatterplot(
+            x=TransformedDataset[:,pc_x],
+            y=TransformedDataset[:,pc_y],
+            hue=LabelsClusters,
+            ax=axes_plot,
+            legend=False,
+            palette='Set2',
+        )
+
+        axes_plot.set_xlabel(f'PC {pc_x+1}')
+        axes_plot.set_ylabel(f'PC {pc_y+1}')
+
+    fig.suptitle('\n\nCluster Analysis Plot',size=24)
 
     return fig
