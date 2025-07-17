@@ -19,7 +19,7 @@ def PlotFeatureOverCategories(
       ReorderCategories: list[str] = MapObesityLevel,
       FeatureName: str = None,
       CategoryName: str = None,
-    ) -> Figure:
+    ) -> Axes:
     """
     Function for plotting the distribution 
     of a numerical feature over a 
@@ -61,13 +61,13 @@ def PlotFeatureOverCategories(
     )
     SetLabelAxisNames(axes,f'Distribution of {FeatureName}',FeatureName,CategoryName)
 
-    return fig
+    return axes
 
 def PlotPivotTable(
         PivotTable: pd.DataFrame,
         Title: str,
         LabelsLegend: list[str] = ['No','Yes'],
-    ) -> Figure:
+    ) -> Axes:
     """
     Function for plotting the distribution 
     the results of a pivot table
@@ -96,7 +96,7 @@ def PlotPivotTable(
     SetLabelAxisNames(axes,f'Distribution of {Title}',axes.get_xlabel(),'Count')
     axes.legend(title=Title,labels=LabelsLegend)
 
-    return fig
+    return axes
 
 def SetLabelAxisNames(
         Axes: Axes,
@@ -130,7 +130,7 @@ def PlotFactorAnalysisLoadings(
         Loadings: np.ndarray,
         Labels: list[str],
         Threshold: float = 0.5,
-    ) -> Figure:
+    ) -> Axes:
     """
     Function for generating the 
     loading factor plot using the 
@@ -173,12 +173,12 @@ def PlotFactorAnalysisLoadings(
 
     SetLabelAxisNames(axes,'Loading Factor\nRelevant Features','Factor 1','Factor 2')
 
-    return fig
+    return axes
 
 def PlotClusterAnalysis(
         TransformedDataset: np.ndarray,
         LabelsClusters: np.ndarray,
-    ) -> Figure:
+    ) -> tuple[Figure,Axes]:
     """
     Function for generating the 
     principal component plot using 
@@ -216,4 +216,4 @@ def PlotClusterAnalysis(
 
     fig.suptitle('\n\nCluster Analysis Plot',size=24)
 
-    return fig
+    return fig , axes

@@ -5,59 +5,6 @@ app = marimo.App(width="medium")
 
 
 @app.cell
-def _():
-    # Importing auxiliar libraries
-    import marimo as mo
-
-
-    # Importing libraries
-
-    import pandas as pd
-    import numpy as np
-    from scipy import stats
-    from statsmodels.multivariate.factor import Factor
-
-    from sklearn.pipeline import Pipeline
-    from sklearn.compose import ColumnTransformer
-    from sklearn.preprocessing import MinMaxScaler
-    from sklearn.decomposition import PCA , KernelPCA
-    from sklearn.cluster import KMeans
-    from sklearn.metrics import silhouette_score
-
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-
-
-    # Importing Functions and Utils
-
-    import SourceExploratoryDataAnalysis as src
-    return (
-        ColumnTransformer,
-        Factor,
-        KMeans,
-        MinMaxScaler,
-        PCA,
-        Pipeline,
-        mo,
-        np,
-        pd,
-        silhouette_score,
-        src,
-        stats,
-    )
-
-
-@app.cell
-def _():
-    # Defining useful variables
-
-    PATH = './Datasets/'
-    PATH_DATASET = PATH + 'ObesityDataset{}.csv'
-    RANDOM_STATE = 8013
-    return PATH_DATASET, RANDOM_STATE
-
-
-@app.cell
 def _(mo):
     mo.md(r"# Exploratory Data Analysis")
     return
@@ -65,7 +12,19 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"")
+    mo.md(
+        r"""
+        The objective of this EDA is to acquire insights regarding the dataset to understand and interpret possible relationships between features and obesity level in order to use and integrate it when designing and defining classification models.
+    
+        In section [1. First Exploration](#1-first-exploration), begins to know the different features that make up the dataset and to integrate knowledge to treat them in the best way, that is, the attribute referring to the Body Mass Index (BMI) is defined and the categorical attributes are determined by their type of behavior (nominal or ordinal).
+    
+        In section [2. Data Analysis](#2-data-analysis), a univariate analysis of some attributes that have a high impact in determining the level of obesity of a person is presented. Where the BMI and overweight relatives play a determining role for someone to have a certain level of obesity, which also allow to prove statistically how they impact on the development of obesity in a person.
+    
+        In section [3. Factor Analysis](#3-factor-analysis), the factors that allow explaining relationships between features are obtained, being the first factor the one that contains the most relevant information, because it groups the features that have the greatest influence on the level of obesity of a person, most of them being the features analyzed in the previous section.
+    
+        Finally, in section [4. Cluster Analysis](#4-cluster-analysis), a fundamental fact for the definition of the classifiers is shown, because the levels of obesity are not shown to be linearly separable, so the models will be nonlinear.
+        """
+    )
     return
 
 
@@ -116,10 +75,61 @@ def _(mo):
 
 
 @app.cell
+def _():
+    # Importing auxiliar libraries
+
+    import marimo as mo
+
+
+    # Importing libraries
+
+    import pandas as pd
+    import numpy as np
+    from scipy import stats
+    from statsmodels.multivariate.factor import Factor
+
+    from sklearn.pipeline import Pipeline
+    from sklearn.compose import ColumnTransformer
+    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.decomposition import PCA , KernelPCA
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+
+
+    # Importing Functions and Utils
+
+    import SourceExploratoryDataAnalysis as src
+    return (
+        ColumnTransformer,
+        Factor,
+        KMeans,
+        MinMaxScaler,
+        PCA,
+        Pipeline,
+        mo,
+        np,
+        pd,
+        silhouette_score,
+        src,
+        stats,
+    )
+
+
+@app.cell
+def _():
+    # Defining useful variables
+
+    PATH = './Datasets/'
+    PATH_DATASET = PATH + 'ObesityDataset{}.csv'
+    RANDOM_STATE = 8013
+    return PATH_DATASET, RANDOM_STATE
+
+
+@app.cell
 def _(PATH_DATASET, pd):
     # Loading dataset
 
-    ObesityDataset_Raw_0 = pd.read_csv(PATH_DATASET.format(''),engine='python')
+    ObesityDataset_Raw_0 = pd.read_csv(PATH_DATASET.format(''),engine='pyarrow')
     ObesityDataset_Raw_0.columns = ObesityDataset_Raw_0.columns.astype(str)
     return (ObesityDataset_Raw_0,)
 
@@ -192,7 +202,7 @@ def _(mo):
         r"""
         When observing the values taken by some of the categorical features, it can be determined that they have ordinal behavior (their values are frequencies) or binary (their values are `yes` or `no`); therefore, they can be encoded without losing their sense or meaning. In addition, the feature that represents the target, `NObeyesdad`, can also be associated with an order because its values represent how obesity increases and scales in an individual.
     
-        Finally, the feature `IBM` (Body Mass Index) is added, which represents one of the main and most widely used measures to describe health condition and is directly related to the level of obesity of a person.
+        Finally, the feature `BMI` (Body Mass Index) is added, which represents one of the main and most widely used measures to describe health condition and is directly related to the level of obesity of a person.
         """
     )
     return
@@ -477,7 +487,7 @@ def _(mo):
         r"""
         The consumption of high calorie foods is associated with obesity because they are non nutritious or ultra-processed foods. Therefore, the more they are consumed, the greater the likelihood of developing obesity or health problems. This can be shown by considering the trend of consumption, where as the complexity of obesity advances, the likelihood or consumption of high-calorie foods increases.
     
-        When determining the coefficient of correspondence or association ($D = 0.4458$), it is shown that the association is significant and notable, therefore there is statistical evidence to indicate that the consumption of high calorie foods increases with the increase in the level of obesity. In other words, people with a higher obesity index tend to consume high-calorie foods frequently.
+        When determining the coefficient of correspondence or association ($D = 0.4458$), it is shown that the association is significant and notable, therefore there is statistical evidence to indicate that the consumption of high-calorie foods increases with the increase in the level of obesity. In other words, people with a higher obesity index tend to consume high-calorie foods frequently.
         """
     )
     return
@@ -641,7 +651,18 @@ def _(ClusteringAnalysis, ObesityDataset_2, silhouette_score):
 
 @app.cell
 def _(LabelsClusters, TransformedDataset, src):
-    src.PlotClusterAnalysis(TransformedDataset,LabelsClusters)
+    src.PlotClusterAnalysis(TransformedDataset,LabelsClusters)[0]
+    return
+
+
+@app.cell
+def _(ObesityDataset_1, ObesityDataset_2, ObesityLevel):
+    # Definiting and saving the final dataset
+
+    ObesityDataset_Clean = ObesityDataset_2.copy(deep=True)
+    ObesityDataset_Clean[ObesityLevel] = ObesityDataset_1[ObesityLevel]
+
+    # ObesityDataset_Clean.to_csv(PATH_DATASET.format('_Clean'))
     return
 
 
