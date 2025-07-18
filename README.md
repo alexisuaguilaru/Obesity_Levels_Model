@@ -24,7 +24,19 @@ Project under [MIT License](LICENSE)
 
 
 ## Exploratory Data Analysis
+A more detailed breakdown of the EDA procedure can be found in [Jupyter](./ExploratoryDataAnalysis/ExploratoryDataAnalysis.ipynb) or [Marimo](./ExploratoryDataAnalysis/ExploratoryDataAnalysis.py) notebooks.
 
+First, a univariate analysis of some of the features relevant to obesity is performed, being Body Mass Index (BMI) the feature that has the greatest weight to determine the obesity condition of an individual. This is because it is the main criterion used to evaluate a person, but it is not the only one because there are other factors.
+
+Since obesity levels are defined by BMI (there are ranges of BMI values to determine a person's obesity), using this feature generates a good separation between levels by definition, but when considering other information these start to become blurred because weight and height are not the only factors to determine the physical condition of an individual.
+
+![BMI Plot](./Resources/EDA_01.png)
+
+A Factor Analysis shows that having overweight family members also influences a person's obesity, which can be explained by the main habits shared with family members. Therefore, it could be concluded that there are external factors that determine certain health conditions of a person.
+
+This phenomenon can be illustrated by considering two families that have totally opposite habits, one is healthy (they exercise and have a balanced diet) and the other is sedentary. The children of these families will illustrate the habits of their parents, thus causing the children of the first family to be healthy and at their ideal weight, while those of the second family tend to be overweight.
+
+From the EDA it is concluded that overweight and obesity are conditions that can not only be classified based on one factor or metric, but that there are others that allow us to better define the specific condition of an individual. The use of information regarding BMI and family history of overweight allows a good description of the level of obesity of a person, but if their physical activity and eating habits are added, this level and the recommendations to improve the quality of life of the individual can be specified.
 
 
 ## Technologies
