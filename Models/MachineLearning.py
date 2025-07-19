@@ -20,7 +20,7 @@ def _():
     # Importing Functions and Utils
 
     import SourceModels as src
-    return ColumnTransformer, StandardScaler, mo, pd, src
+    return ColumnTransformer, Pipeline, StandardScaler, mo, pd, src
 
 
 @app.cell
@@ -29,7 +29,9 @@ def _(src):
 
     PATH = './Models/'
     NUM_JOBS = src.GetNumJobs()
-    return NUM_JOBS, PATH
+
+    RANDOM_STATE = 8013
+    return NUM_JOBS, PATH, RANDOM_STATE
 
 
 @app.cell
@@ -86,10 +88,63 @@ def _(ColumnTransformer, NUM_JOBS, NumericalFeatures, StandardScaler):
             ('NumericalFeatures',StandardScaler(),NumericalFeatures),
         ],
         remainder='passthrough',
-        n_jobs=NUM_JOBS**2,
+        n_jobs=NUM_JOBS,
     )
 
     PreprocessingPipeline
+    return (PreprocessingPipeline,)
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 2. Models")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"## 2.1. Logistic Regression")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"In order to generate more flexibility in the hyperparameter fine-tuning, it was decided to use the penalty [`elasticnet`](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html) that allows using a convex combination of the `l1` and `l2` penalties, so that the optimizer can choose and give a higher weight to the most convenient penalty for the classification problem.")
+    return
+
+
+@app.cell
+def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
+    # Defining Logistic Regression model
+
+    from sklearn.linear_model import LogisticRegression
+
+    LogisticRegression_Model = Pipeline(
+        [
+            ('Preprocessing',PreprocessingPipeline),
+            ('Model',LogisticRegression(
+                penalty='elasticnet',
+                solver='saga',
+                random_state=RANDOM_STATE,
+                n_jobs=NUM_JOBS,
+                )
+            ),
+        ]
+    )
+
+    LogisticRegression_Parameters = {
+        'Model__C':('float',[1e-10,2]),
+        'Model__l1_ratio':('float',[0,1]),
+    }
+
+
+    LogisticRegression_Model
     return
 
 
