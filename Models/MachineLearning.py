@@ -65,10 +65,10 @@ def _(PATH, pd):
     _DatasetFilename = PATH + 'Dataset_{}.csv'
 
     Dataset_Train: pd.DataFrame = None
-    Dataset_Test: pd.DataFrame = None
-    for _type_dataset in ['Train','Test']:
+    Dataset_Evaluation: pd.DataFrame = None
+    for _type_dataset in ['Train','Evaluation']:
         globals()[f'Dataset_{_type_dataset}'] = pd.read_csv(_DatasetFilename.format(_type_dataset),engine='pyarrow')
-    return (Dataset_Train,)
+    return Dataset_Evaluation, Dataset_Train
 
 
 @app.cell
@@ -76,7 +76,8 @@ def _(Dataset_Train: "pd.DataFrame", src):
     # Splitting features 
 
     NumericalFeatures , CategoricalFeatures , Target = src.SplitFeatures(Dataset_Train)
-    return (NumericalFeatures,)
+    Features = [*NumericalFeatures,*CategoricalFeatures]
+    return Features, NumericalFeatures, Target
 
 
 @app.cell
@@ -97,7 +98,7 @@ def _(ColumnTransformer, NUM_JOBS, NumericalFeatures, StandardScaler):
 
 @app.cell
 def _(mo):
-    mo.md(r"# 2. Models")
+    mo.md(r"# 2. Models Definition")
     return
 
 
@@ -145,6 +146,59 @@ def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
 
 
     LogisticRegression_Model
+    return LogisticRegression_Model, LogisticRegression_Parameters
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 3. Models Fitting")
+    return
+
+
+@app.cell
+def _(
+    Dataset_Evaluation: "pd.DataFrame",
+    Dataset_Train: "pd.DataFrame",
+    Features,
+    LogisticRegression_Model,
+    LogisticRegression_Parameters,
+    Pipeline,
+    Target,
+    pd,
+    src,
+):
+    from sklearn.metrics import f1_score
+
+    def Metric(
+            Model: Pipeline,
+            Dataset_X: pd.DataFrame,
+            Dataset_y: pd.DataFrame,
+        ):
+        """
+        """
+        PredictLabels = Model.predict(Dataset_X)
+        return f1_score(Dataset_y,PredictLabels,average='weighted')
+
+
+    _test = src.MachinLearningTrainer(
+        LogisticRegression_Model,
+        LogisticRegression_Parameters,
+        Metric,
+    )
+
+    import warnings
+    from sklearn.exceptions import ConvergenceWarning
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore',category=ConvergenceWarning)
+        _test(
+            Dataset_Train[Features],
+            Dataset_Train[Target],
+            Dataset_Evaluation[Features],
+            Dataset_Evaluation[Target],
+            NumTrials=8,
+            NumJobs=2,
+        )
     return
 
 
