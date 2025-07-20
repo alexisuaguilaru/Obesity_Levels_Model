@@ -146,7 +146,7 @@ def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
 
 
     LogisticRegression_Model
-    return
+    return LogisticRegression_Model, LogisticRegression_Parameters
 
 
 @app.cell
@@ -191,7 +191,65 @@ def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
 
 @app.cell
 def _(mo):
+    mo.md(r"## 2.3. Support Vector Machine (SVM)")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"The most important hyperparameter in [SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) is the `kernel`, because it controls the nonlinearity of the algorithm; and for more flexibility during training other parameters are considered for the kernel of the model.")
+    return
+
+
+@app.cell
+def _(Pipeline, PreprocessingPipeline, RANDOM_STATE):
+    # Defining Random Forest model
+
+    from sklearn.svm import SVC
+
+    SVM_Model = Pipeline(
+        [
+            ('Preprocessing',PreprocessingPipeline),
+            ('Model',SVC(
+                random_state=RANDOM_STATE,
+                )
+            ),
+        ]
+    )
+
+    SVM_Parameters = {
+        'Model__C':('float',[1e-10,2]),
+        'Model__kernel':('categorical',['poly','rbf','sigmoid']),
+        'Model__degree':('int',[1,5]),
+        'Model__gamma':('float',[1e-10,2]),
+        'Model__coef0':('float',[0,2]),
+    }
+
+
+    SVM_Model
+    return SVM_Model, SVM_Parameters
+
+
+@app.cell
+def _(mo):
     mo.md(r"# 3. Models Fitting")
+    return
+
+
+@app.cell
+def _(
+    LogisticRegression_Model,
+    LogisticRegression_Parameters,
+    RandomForest_Model,
+    RandomForest_Parameters,
+    SVM_Model,
+    SVM_Parameters,
+):
+    [
+        (LogisticRegression_Model , LogisticRegression_Parameters),
+        (RandomForest_Model , RandomForest_Parameters),
+        (SVM_Model , SVM_Parameters),
+    ]
     return
 
 
@@ -202,8 +260,8 @@ def _(
     Features,
     NUM_JOBS,
     Pipeline,
-    RandomForest_Model,
-    RandomForest_Parameters,
+    SVM_Model,
+    SVM_Parameters,
     Target,
     pd,
     src,
@@ -222,8 +280,8 @@ def _(
 
 
     _test = src.MachinLearningTrainer(
-        RandomForest_Model,
-        RandomForest_Parameters,
+        SVM_Model,
+        SVM_Parameters,
         Metric,
     )
 
@@ -237,9 +295,11 @@ def _(
             Dataset_Train[Target],
             Dataset_Evaluation[Features],
             Dataset_Evaluation[Target],
-            NumTrials=32,
+            NumTrials=24,
             NumJobs=NUM_JOBS,
         )
+
+    best_params
     return
 
 
