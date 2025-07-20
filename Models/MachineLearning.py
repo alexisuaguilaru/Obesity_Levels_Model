@@ -146,7 +146,47 @@ def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
 
 
     LogisticRegression_Model
-    return LogisticRegression_Model, LogisticRegression_Parameters
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"## 2.2. Random Forest")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"Fine-tunning is performed on the most relevant hyperparemeters of [Random Fores](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html) which are: `n_estimators`,`max_depth` and `criterion`. They are relevant since they allow to control the overfit and underfit of the model.")
+    return
+
+
+@app.cell
+def _(NUM_JOBS, Pipeline, PreprocessingPipeline, RANDOM_STATE):
+    # Defining Random Forest model
+
+    from sklearn.ensemble import RandomForestClassifier
+
+    RandomForest_Model = Pipeline(
+        [
+            ('Preprocessing',PreprocessingPipeline),
+            ('Model',RandomForestClassifier(
+                random_state=RANDOM_STATE,
+                n_jobs=NUM_JOBS,
+                )
+            ),
+        ]
+    )
+
+    RandomForest_Parameters = {
+        'Model__n_estimators': ('int',[1,100]),
+        'Model__max_depth': ('int',[1,12]),
+        'Model__criterion': ('categorical',['gini','entropy'])
+    }
+
+
+    RandomForest_Model
+    return RandomForest_Model, RandomForest_Parameters
 
 
 @app.cell
@@ -160,9 +200,10 @@ def _(
     Dataset_Evaluation: "pd.DataFrame",
     Dataset_Train: "pd.DataFrame",
     Features,
-    LogisticRegression_Model,
-    LogisticRegression_Parameters,
+    NUM_JOBS,
     Pipeline,
+    RandomForest_Model,
+    RandomForest_Parameters,
     Target,
     pd,
     src,
@@ -181,8 +222,8 @@ def _(
 
 
     _test = src.MachinLearningTrainer(
-        LogisticRegression_Model,
-        LogisticRegression_Parameters,
+        RandomForest_Model,
+        RandomForest_Parameters,
         Metric,
     )
 
@@ -191,13 +232,13 @@ def _(
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore',category=ConvergenceWarning)
-        _test(
+        best_params = _test(
             Dataset_Train[Features],
             Dataset_Train[Target],
             Dataset_Evaluation[Features],
             Dataset_Evaluation[Target],
-            NumTrials=8,
-            NumJobs=2,
+            NumTrials=32,
+            NumJobs=NUM_JOBS,
         )
     return
 
