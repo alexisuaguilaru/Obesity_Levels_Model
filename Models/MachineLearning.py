@@ -305,62 +305,88 @@ def _(
     SVM_Model,
     SVM_Parameters,
 ):
-    [
+    # Defining containers for models and their params to optimize, 
+    # and variables for saving best models
+
+    ModelsName = [
+        'Logistic Regression',
+        'Random Forest',
+        'SVM',
+        'AdaBoost',
+    ]
+
+    ModelsParams = [
         (LogisticRegression_Model , LogisticRegression_Parameters),
         (RandomForest_Model , RandomForest_Parameters),
         (SVM_Model , SVM_Parameters),
         (AdaBoost_Model , AdaBoost_Parameters)
     ]
-    return
+
+    BestModels = []
+    return BestModels, ModelsName, ModelsParams
 
 
 @app.cell
 def _(
-    AdaBoost_Model,
-    AdaBoost_Parameters,
+    BestModels,
     Dataset_Evaluation: "pd.DataFrame",
     Dataset_Train: "pd.DataFrame",
     Features,
+    ModelsName,
+    ModelsParams,
     NUM_JOBS,
-    Pipeline,
     Target,
-    pd,
     src,
 ):
-    from sklearn.metrics import f1_score
-
-    def Metric(
-            Model: Pipeline,
-            Dataset_X: pd.DataFrame,
-            Dataset_y: pd.DataFrame,
-        ):
-        """
-        """
-        PredictLabels = Model.predict(Dataset_X)
-        return f1_score(Dataset_y,PredictLabels,average='weighted')
-
-
-    _test = src.MachinLearningTrainer(
-        AdaBoost_Model,
-        AdaBoost_Parameters,
-        Metric,
-    )
+    # Importing auxiliars para ignore warnings
 
     import warnings
     from sklearn.exceptions import ConvergenceWarning
 
+    # Fine-tunning and training of models
+
+    from copy import deepcopy
+
+    _NumTrials = 24
+    _Metric = src.F1_ML
     with warnings.catch_warnings():
         warnings.simplefilter('ignore',category=ConvergenceWarning)
         warnings.simplefilter('ignore',category=UserWarning)
+    
+        TrainDataset_X = Dataset_Train[Features]
+        TrainDataset_y = Dataset_Train[Target]
+        EvaluationDataset_X = Dataset_Evaluation[Features]
+        EvaluationDataset_y = Dataset_Evaluation[Target]
 
-        best_params = _test(
-            Dataset_Train[Features],
-            Dataset_Train[Target],
-            Dataset_Evaluation[Features],
-            Dataset_Evaluation[Target],
-            NumTrials=32,
-            NumJobs=NUM_JOBS,
-        )
+        for (_model , _params) , _model_name in zip(ModelsParams,ModelsName):
+            # Defining optimizer
+            _trainer = src.MachinLearningTrainer(
+                _model,
+                _params,
+                _Metric,
+            )
+
+            # Fine-tuning of hyperparameters
+            print(f' Start Fine-Tuning of {_model_name} '.center(50,'='))
+            _best_params = _trainer(
+                TrainDataset_X,
+                TrainDataset_y,
+                EvaluationDataset_X,
+                EvaluationDataset_y,
+                NumTrials=_NumTrials,
+                NumJobs=NUM_JOBS,
+            )
+
+            # Training model with the best parameters
+            _best_model = deepcopy(_model)
+            _best_model.set_params(**_best_params)
+            _best_model.fit(TrainDataset_X,TrainDataset_y)
+            BestModels.append(deepcopy(_best_model))
+
+        print('\n',' Start Models Evaluation '.center(50,'='))
+        for _best_model , _model_name in zip(BestModels,ModelsName):
+            _score = _Metric(_best_model,EvaluationDataset_X,EvaluationDataset_y)
+            print(f'Best {_model_name} Model obtains :: {_score} Score')
     return
 
 
