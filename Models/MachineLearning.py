@@ -104,7 +104,18 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"")
+    mo.md(
+        r"""
+        In this section the candidate models to be trained are defined, where both linear and nonlinear models are used to generate greater flexibility when solving the classification problem. The hyperparameters to be optimized during training and fine-tunning are also defined.
+    
+        The models that were chosen represent a reduced collection of techniques and ways of approaching the classification problem, where the priority was to have a greater diversification of them. Specifically, the following were chosen:
+    
+        * [Logistic Regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
+        * [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+        * [SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
+        * [AdaBoost](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
+        """
+    )
     return
 
 
@@ -232,12 +243,61 @@ def _(Pipeline, PreprocessingPipeline, RANDOM_STATE):
 
 @app.cell
 def _(mo):
+    mo.md(r"## 2.4. Adaptive Boosting (AdaBoost)")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"AdaBoost is used as an ensemble model where the number of estimators (`n_estimators`) is the main hyperparameter to optimize, being which allows to control the general underfit and overfit of the model.")
+    return
+
+
+@app.cell
+def _(Pipeline, PreprocessingPipeline, RANDOM_STATE):
+    # Defining Random Forest model
+
+    from sklearn.ensemble import AdaBoostClassifier
+    from sklearn.tree import DecisionTreeClassifier
+
+    AdaBoost_Model = Pipeline(
+        [
+            ('Preprocessing',PreprocessingPipeline),
+            ('Model',AdaBoostClassifier(
+                random_state=RANDOM_STATE,
+                )
+            ),
+        ]
+    )
+
+    base_estimators = [DecisionTreeClassifier(max_depth=depth,random_state=RANDOM_STATE) for depth in range(1,3)]
+    AdaBoost_Parameters = {
+        'Model__estimator':('categorical',base_estimators),
+        'Model__n_estimators':('int',[1,100]),
+        'Model__learning_rate':('float',[1e-12,2]),
+    }
+
+
+    AdaBoost_Model
+    return AdaBoost_Model, AdaBoost_Parameters
+
+
+@app.cell
+def _(mo):
     mo.md(r"# 3. Models Fitting")
     return
 
 
 @app.cell
+def _(mo):
+    mo.md(r"")
+    return
+
+
+@app.cell
 def _(
+    AdaBoost_Model,
+    AdaBoost_Parameters,
     LogisticRegression_Model,
     LogisticRegression_Parameters,
     RandomForest_Model,
@@ -249,19 +309,20 @@ def _(
         (LogisticRegression_Model , LogisticRegression_Parameters),
         (RandomForest_Model , RandomForest_Parameters),
         (SVM_Model , SVM_Parameters),
+        (AdaBoost_Model , AdaBoost_Parameters)
     ]
     return
 
 
 @app.cell
 def _(
+    AdaBoost_Model,
+    AdaBoost_Parameters,
     Dataset_Evaluation: "pd.DataFrame",
     Dataset_Train: "pd.DataFrame",
     Features,
     NUM_JOBS,
     Pipeline,
-    SVM_Model,
-    SVM_Parameters,
     Target,
     pd,
     src,
@@ -280,8 +341,8 @@ def _(
 
 
     _test = src.MachinLearningTrainer(
-        SVM_Model,
-        SVM_Parameters,
+        AdaBoost_Model,
+        AdaBoost_Parameters,
         Metric,
     )
 
@@ -290,16 +351,16 @@ def _(
 
     with warnings.catch_warnings():
         warnings.simplefilter('ignore',category=ConvergenceWarning)
+        warnings.simplefilter('ignore',category=UserWarning)
+
         best_params = _test(
             Dataset_Train[Features],
             Dataset_Train[Target],
             Dataset_Evaluation[Features],
             Dataset_Evaluation[Target],
-            NumTrials=24,
+            NumTrials=32,
             NumJobs=NUM_JOBS,
         )
-
-    best_params
     return
 
 
