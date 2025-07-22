@@ -28,6 +28,8 @@ def _(src):
     # Defining useful variables
 
     PATH = './Models/'
+    PATH_SAVE = PATH + 'SaveModels/'
+
     NUM_JOBS = src.GetNumJobs()
 
     RANDOM_STATE = 8013
@@ -42,7 +44,17 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"")
+    mo.md(
+        r"""
+        The detailed procedure to generate Machine Learning models for the classification of a patient's obesity level based on their lifestyle habits is presented in this notebook. For the fine-tunning of the hyperparameters, [Optuna](https://optuna.org) is used together with the training dataset and the models are evaluated on the evaluation dataset.
+    
+        Section [1. Preprocessing Pipeline](#1-preprocessing-pipeline) defines the preprocessing of the real value features, which are applied a standard scaling, and the other features are left unchanged. This scaling is done so that all the features are in the same range and to avoid bias problems that can be generated.
+    
+        In section [2. Models Definition](#2-models-definition) the models to be used are created, where the priority is to have a diversification of classification techniques, together with the space of hyperparameters to be fine-tuned by means of [Optuna](https://optuna.org). In addition, a brief justification of the choice of the hyperparameters to be optimized is presented based on the training flexibility of the models (so that they fit adequately to the training set).
+    
+        Finally, in section [3. Models Fitting](#3-models-fitting) the hyperparameters of each model are fitted and the models are trained with the best hyperparameters found. For the evaluation of the models, F1 score was used due to the imbalance in the dataset with respect to `NObeyesdad`.
+        """
+    )
     return
 
 
@@ -290,7 +302,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"")
+    mo.md(r"With the definition of the models and hyperparameters to be optimized, the model fitting is performed using [Optuna](https://optuna.org) as framework to search for the best hyperparameters of each model according to the search space defined in [2. Models Definition](#2-models-definition). For determining the best hyperparameters, F1 score with weighted average is used because the dataset is slightly imbalanced with respect to the target (`NObeyesdad`), as described in [Exploratory Data Analysis](../ExploratoryDataAnalysis/ExploratoryDataAnalysis.py). Finally, the models are trained with the best hyperparameters and then saved.")
     return
 
 
@@ -347,12 +359,12 @@ def _(
 
     from copy import deepcopy
 
-    _NumTrials = 24
+    _NumTrials = 8
     _Metric = src.F1_ML
     with warnings.catch_warnings():
         warnings.simplefilter('ignore',category=ConvergenceWarning)
         warnings.simplefilter('ignore',category=UserWarning)
-    
+
         TrainDataset_X = Dataset_Train[Features]
         TrainDataset_y = Dataset_Train[Target]
         EvaluationDataset_X = Dataset_Evaluation[Features]
@@ -387,6 +399,16 @@ def _(
         for _best_model , _model_name in zip(BestModels,ModelsName):
             _score = _Metric(_best_model,EvaluationDataset_X,EvaluationDataset_y)
             print(f'Best {_model_name} Model obtains :: {_score} Score')
+    return
+
+
+@app.cell
+def _(BestModels, ModelsName):
+    # Saving models
+
+    for _best_model , _model_name in zip(BestModels,ModelsName):
+        print('\n',f' Start Save {_model_name} Model '.center(50,'='))
+        # src.SaveModelML(_best_model,PATH_SAVE,_model_name.replace(' ',''))
     return
 
 
