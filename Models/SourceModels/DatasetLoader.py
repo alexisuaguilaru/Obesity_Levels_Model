@@ -9,7 +9,6 @@ class DatasetLoader(Dataset):
             PathDataset: str,
             Features: list[str],
             Target: str,
-            Device: str,
         ):
         """
         Dataset Loader for fetching/getting 
@@ -24,14 +23,11 @@ class DatasetLoader(Dataset):
             Features columns of a instance
         Target: str
             Target column of a instance
-        Device: str
-            Destination device of resulting fetching/getting instance
         """
 
         self.Dataset_pd = pd.read_csv(PathDataset)
         self.Features = Features
         self.Target = Target
-        self.Device = Device
 
     def __len__(self) -> int:
         """
@@ -58,6 +54,6 @@ class DatasetLoader(Dataset):
 
         Instance = self.Dataset_pd.iloc[Index]
         Instance_X = Tensor(Instance[self.Features])
-        Label_y = Tensor([Instance[self.Target]])
+        Label_y = Instance[self.Target]
 
-        return Instance_X.to(self.Device) , Label_y.to(self.Device)
+        return Instance_X , Label_y

@@ -21,7 +21,7 @@ def _():
     # Importing Functions and Utils
 
     import SourceModels as src
-    return DataLoader, Dataset, device, is_available, mo, pd, src
+    return DataLoader, Dataset, Tensor, device, is_available, mo, nn, pd, src
 
 
 @app.cell
@@ -77,7 +77,7 @@ def _(PATH, pd, src):
 
 
 @app.cell
-def _(Dataset, DatasetFilename, Features, TORCH_DEVICE, Target, src):
+def _(Dataset, DatasetFilename, Features, Target, src):
     # Loading datasets
 
     Dataset_Train: Dataset = None
@@ -87,7 +87,6 @@ def _(Dataset, DatasetFilename, Features, TORCH_DEVICE, Target, src):
             DatasetFilename.format(_type_dataset),
             Features,
             Target,
-            TORCH_DEVICE
         )
     return Dataset_Evaluation, Dataset_Train
 
@@ -99,6 +98,56 @@ def _(DataLoader, Dataset_Evaluation: "Dataset", Dataset_Train: "Dataset"):
     BatchSize = 32
     Dataloader_Train = DataLoader(Dataset_Train,batch_size=BatchSize,shuffle=True)
     Dataloader_Evaluation = DataLoader(Dataset_Evaluation,batch_size=BatchSize,shuffle=True)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 2. Model Architecture")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"A simple neural network of small size is defined to facilitate its training and reduce the amount of memory required. The current architecture consists of a hidden layer.")
+    return
+
+
+@app.cell
+def _(Tensor, nn):
+    class NeuralNetwork(nn.Module):
+        def __init__(self):
+            """
+            Neural network architecture for 
+            predicting the obesity level of 
+            a person
+            """
+
+            super().__init__()
+
+            self.NN = nn.Sequential(
+                nn.Linear(21,10),
+                nn.ReLU(),
+                nn.Linear(10,7),
+            )
+
+        def forward(
+                self,
+                Instance_X: Tensor
+            ) -> Tensor:
+
+            Logits = self.NN(Instance_X)
+            return Logits
+    return (NeuralNetwork,)
+
+
+@app.cell
+def _(NeuralNetwork, TORCH_DEVICE):
+    # Creating the model instance
+
+    Model_NN = NeuralNetwork().to(TORCH_DEVICE)
+
+    Model_NN
     return
 
 
