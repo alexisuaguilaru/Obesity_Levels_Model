@@ -25,9 +25,9 @@ class DatasetLoader(Dataset):
             Target column of a instance
         """
 
-        self.Dataset_pd = pd.read_csv(PathDataset)
-        self.Features = Features
-        self.Target = Target
+        Dataset = pd.read_csv(PathDataset)
+        self.Instances = Dataset[Features].to_numpy()
+        self.Labels = Dataset[Target].to_numpy()
 
     def __len__(self) -> int:
         """
@@ -37,7 +37,7 @@ class DatasetLoader(Dataset):
             Size of the dataset
         """
 
-        return len(self.Dataset_pd)
+        return len(self.Instances)
 
     def __getitem__(
             self,
@@ -52,8 +52,7 @@ class DatasetLoader(Dataset):
             Tensor with instance label
         """
 
-        Instance = self.Dataset_pd.iloc[Index]
-        Instance_X = Tensor(Instance[self.Features])
-        Label_y = Instance[self.Target]
+        Instance_X = Tensor(self.Instances[Index])
+        Label_y = self.Labels[Index]
 
         return Instance_X , Label_y
