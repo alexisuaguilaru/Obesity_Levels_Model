@@ -12,6 +12,7 @@ def _():
 
     # Importing libraries
 
+    from functools import partial
     from torch import nn , device , optim , no_grad , Tensor
     from torch.cuda import is_available
 
@@ -22,15 +23,14 @@ def _():
 
     import SourceModels as src
     return (
-        DataLoader,
         Dataset,
         Tensor,
         device,
         is_available,
         mo,
         nn,
-        no_grad,
         optim,
+        partial,
         pd,
         src,
     )
@@ -104,16 +104,6 @@ def _(Dataset, DatasetFilename, Features, Target, src):
 
 
 @app.cell
-def _(DataLoader, Dataset_Evaluation: "Dataset", Dataset_Train: "Dataset"):
-    # Creating data loaders
-
-    BatchSize = 16
-    Dataloader_Train = DataLoader(Dataset_Train,batch_size=BatchSize,shuffle=True)
-    Dataloader_Evaluation = DataLoader(Dataset_Evaluation,batch_size=BatchSize,shuffle=True)
-    return BatchSize, Dataloader_Evaluation, Dataloader_Train
-
-
-@app.cell
 def _(mo):
     mo.md(r"# 2. Model Architecture")
     return
@@ -121,7 +111,7 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"A simple neural network of small size is defined to facilitate its training and reduce the amount of memory required. The current architecture consists of a hidden layer.")
+    mo.md(r"A simple neural network of small size is defined to facilitate its training and reduce the amount of memory required.")
     return
 
 
@@ -142,9 +132,9 @@ def _(Tensor, nn):
                 nn.ReLU(),
                 nn.Linear(50,25),
                 nn.ReLU(),
-                nn.Linear(25,10),
+                nn.Linear(25,15),
                 nn.ReLU(),
-                nn.Linear(10,7),
+                nn.Linear(15,7),
             )
 
         def forward(
@@ -158,13 +148,13 @@ def _(Tensor, nn):
 
 
 @app.cell
-def _(NeuralNetwork, TORCH_DEVICE):
+def _(NeuralNetwork):
     # Creating the model instance
 
-    Model_NN = NeuralNetwork().to(TORCH_DEVICE)
+    Model_NN = NeuralNetwork()
 
     Model_NN
-    return (Model_NN,)
+    return
 
 
 @app.cell
@@ -180,113 +170,49 @@ def _(mo):
 
 
 @app.cell
-def _():
-    from torcheval.metrics import MulticlassF1Score
-    from typing import Callable
+def _(nn, optim, partial, src):
+    # Defining optimizer, loss function and metric
 
-    def F1_NN(
-            NumClass: int = 7,
-            Average: str = 'weighted',
-        ) -> Callable:
-        """
-        """
-
-        return MulticlassF1Score(num_classes=NumClass,average=Average)
-    return (F1_NN,)
-
-
-@app.function
-def TrainLoop(
-        DataLoader,
-        Model,
-        LossFunction,
-        Optimizer,
-        BatchSize,
-        Device: str,
-    ):
-    """
-    """
-
-    Size = len(DataLoader.dataset)
-    Model.train()
-
-    for batch, data_train in enumerate(DataLoader):
-        instance_X , label_y = data_train[0].to(Device) , data_train[1].to(Device)
-
-        pred_labels = Model(instance_X)
-        loss_data = LossFunction(pred_labels, label_y)
-
-        loss_data.backward()
-        Optimizer.step()
-        Optimizer.zero_grad()
-
-        if batch % 10 == 0:
-            loss_value , current = loss_data.item() , batch*BatchSize+len(instance_X)
-            print(f"Loss :: {loss_value:>7f}  [{current:>5d}/{Size:>5d}]")
-
-
-@app.cell
-def _(no_grad):
-    def EvaluationLoop(
-            DataLoader,
-            Model,
-            LossFunction,
-            Metric,
-            Device,
-        ):
-        """
-        """
-
-        Model.eval()
-        NumBatches = len(DataLoader)
-        TestLoss = 0
-
-        with no_grad():
-            for data_test in DataLoader:
-                instance_X , label_y = data_test[0].to(Device) , data_test[1].to(Device)
-
-                pred_labels = Model(instance_X)
-                TestLoss += LossFunction(pred_labels,label_y).item()
-
-                Metric.update(pred_labels.argmax(1),label_y)
-
-        TestLoss /= NumBatches
-        print(f"Test Error: \nF1: {(Metric.compute()*100):>0.1f}%, Avg loss: {TestLoss:>8f} \n")
-        Metric.reset() 
-    return (EvaluationLoop,)
-
-
-@app.cell
-def _(F1_NN, Model_NN, nn, optim):
-    LearningRate = 1e-3
-    Optimizer = optim.Adam(
-            Model_NN.parameters(),
-            lr=LearningRate,
-        )
+    _LearningRate = 1e-4
+    Optimizer = partial(optim.Adam,lr=_LearningRate)
 
     LossFunction = nn.CrossEntropyLoss()
+    MetricFunction = src.F1_NN()
+    return LossFunction, MetricFunction, Optimizer
 
-    Metric = F1_NN()
-    return LossFunction, Metric, Optimizer
+
+@app.cell
+def _(LossFunction, NeuralNetwork, Optimizer, src):
+    # Initializing trainer of Neural Network
+
+    NN_Trainer = src.NeuralNetworTrainer(
+            NeuralNetwork,
+            Optimizer,
+            LossFunction,
+        )
+    return (NN_Trainer,)
 
 
 @app.cell
 def _(
-    BatchSize,
-    Dataloader_Evaluation,
-    Dataloader_Train,
-    EvaluationLoop,
-    LossFunction,
-    Metric,
-    Model_NN,
-    Optimizer,
+    Dataset_Evaluation: "Dataset",
+    Dataset_Train: "Dataset",
+    MetricFunction,
+    NN_Trainer,
     TORCH_DEVICE,
 ):
-    Epochs = 10
-    for _t in range(Epochs):
-        print(f' Epoch {_t+1} '.center(25,'-'))
-        TrainLoop(Dataloader_Train,Model_NN,LossFunction,Optimizer,BatchSize,TORCH_DEVICE)
-        EvaluationLoop(Dataloader_Evaluation,Model_NN,LossFunction,Metric,TORCH_DEVICE)
+    # Training of neural network
+
+    _Epochs = 5
+    BatchSize = 16
+    NN_Trainer(
+        Dataset_Train,
+        Dataset_Evaluation,
+        BatchSize,
+        _Epochs,
+        MetricFunction,
+        TORCH_DEVICE
+    )
     return
 
 

@@ -1,5 +1,7 @@
 from sklearn.metrics import f1_score
+from torcheval.metrics import MulticlassF1Score
 
+from typing import Callable
 from sklearn.pipeline import Pipeline
 import pandas as pd
 
@@ -29,3 +31,14 @@ def F1_ML(
 
     PredictLabels = Model.predict(Dataset_X)
     return f1_score(Dataset_y,PredictLabels,average='weighted')
+
+def F1_NN(
+        NumClass: int = 7,
+        Average: str = 'weighted',
+    ) -> Callable:
+    """
+    Function for calculating F1 score of a 
+    PyTorch model/nn.Module.
+    """
+
+    return MulticlassF1Score(num_classes=NumClass,average=Average)

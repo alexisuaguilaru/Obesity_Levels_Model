@@ -6,6 +6,10 @@ from sklearn.pipeline import Pipeline
 import pandas as pd
 from typing import Callable , Any
 
+from torch import nn , no_grad
+from torch.utils.data import Dataset , DataLoader
+from torcheval.metrics import Metric
+
 suggest_float = optuna.trial.Trial.suggest_float
 suggest_int = optuna.trial.Trial.suggest_int
 suggest_categorical = optuna.trial.Trial.suggest_categorical
@@ -193,3 +197,129 @@ class MachinLearningTrainer:
             SuggestedParameters[param_name] = suggest_function(Trial)
 
         return SuggestedParameters
+    
+
+class NeuralNetworTrainer:
+    def __init__(
+            self,
+            NeuralNetwork: nn.Module,
+            Optimizer: Callable,
+            LossFunction: nn.Module,
+        ):
+        """
+        Trainer for PyTorch Modules/Neural Networks.
+
+        Parameters
+        ----------
+        NeuralNetwork: nn.Module
+            Neural Network architecture. It is a subclass of `nn.Module` (not a object)
+        Optimizer: Callable
+            Function that takes the parameters of a `nn.Moduel` and returns a optimizer of `torch.optim`
+        LossFunction: nn.Module
+            Loss function for training of the model
+        """
+
+        self.ModelArchitecture = NeuralNetwork
+        self.Optimizer = Optimizer
+        self.LossFunction = LossFunction
+
+    def __call__(
+            self,
+            TrainDataset: Dataset,
+            EvaluationDataset: Dataset,
+            BatchSize: int,
+            Epochs: int,
+            Metric: Metric,
+            Device: str,
+        ) -> nn.Module:
+        """
+        Method for training a instance of `self.ModelArchitecture` with 
+        `TrainDataset`, optimizer and loss function given
+
+        Parameters
+        ----------
+        TrainDataset: Dataset
+            Instances of train dataset
+        EvaluationDataset: Dataset
+            Instances of evaluation dataset
+        BatchSize: int
+            `batch_size` parameter for `torch.utils.data.DataLoader`
+        Epochs: int
+            Number of training epochs
+        Metric: Metric
+            Metric used for evaluate a model
+        Device: str, 
+            Location/Destination for model
+
+        Return
+        ------
+        TrainedModel: nn.Module
+            Trained instance of `self.ModelArchitecture`
+        """
+
+        self.Device = Device
+
+        self.BatchSize = BatchSize
+        self.TrainDataLoader = DataLoader(TrainDataset,batch_size=BatchSize,shuffle=True)
+        self.EvaluationDataLoader = DataLoader(EvaluationDataset,batch_size=BatchSize,shuffle=True)
+
+        self.Model = self.ModelArchitecture().to(Device)
+        self.InitOptimizer = self.Optimizer(self.Model.parameters())
+        self.Metric = Metric
+
+        for epoch in range(Epochs):
+            print(f' Epoch {epoch+1} '.center(25,'-'))
+            self.TrainLoop()
+            self.EvaluationLoop()
+
+        return self.Model
+
+    def TrainLoop(
+            self,
+        ):
+        """
+        Method for training `self.Model` during 
+        a epoch using the `self.TrainDataLoader`
+        """
+
+        Size = len(self.TrainDataLoader.dataset)
+
+        self.Model.train()
+        for batch, data_train in enumerate(self.TrainDataLoader):
+            instance_X , label_y = data_train[0].to(self.Device) , data_train[1].to(self.Device)
+
+            pred_labels = self.Model(instance_X)
+            loss_data = self.LossFunction(pred_labels,label_y)
+
+            loss_data.backward()
+            self.InitOptimizer.step()
+            self.InitOptimizer.zero_grad()
+
+            if batch % 10 == 0:
+                loss_value , current = loss_data.item() , batch*self.BatchSize+len(instance_X)
+                print(f"Loss :: {loss_value:>7f}  [{current:>5d}/{Size:>5d}]")
+
+    def EvaluationLoop(
+            self,
+        ):
+        """
+        Method for evaluating `self.Model` during 
+        after a epoch with `self.EvaluationDataLoader`
+        """
+
+        self.Model.eval()
+        NumBatches = len(self.EvaluationDataLoader)
+        TestLoss = 0
+
+        with no_grad():
+            for data_test in self.EvaluationDataLoader:
+                instance_X , label_y = data_test[0].to(self.Device) , data_test[1].to(self.Device)
+
+                pred_labels = self.Model(instance_X)
+                TestLoss += self.LossFunction(pred_labels,label_y).item()
+
+                self.Metric.update(pred_labels.argmax(1),label_y)
+
+        TestLoss /= NumBatches
+        print(f"Test Error: \nF1: {(self.Metric.compute()*100):>0.1f}%, Avg loss: {TestLoss:>8f} \n")
+        self.Metric.reset() 
