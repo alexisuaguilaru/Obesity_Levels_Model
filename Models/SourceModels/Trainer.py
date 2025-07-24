@@ -197,7 +197,6 @@ class MachinLearningTrainer:
             SuggestedParameters[param_name] = suggest_function(Trial)
 
         return SuggestedParameters
-    
 
 class NeuralNetworTrainer:
     def __init__(
@@ -253,8 +252,8 @@ class NeuralNetworTrainer:
 
         Return
         ------
-        TrainedModel: nn.Module
-            Trained instance of `self.ModelArchitecture`
+        BestModel: nn.Module
+            Best instance of `self.ModelArchitecture` during the training
         """
 
         self.Device = Device
@@ -267,12 +266,22 @@ class NeuralNetworTrainer:
         self.InitOptimizer = self.Optimizer(self.Model.parameters())
         self.Metric = Metric
 
+        BestParameters = None
+        BestScore = 0
         for epoch in range(Epochs):
             print(f' Epoch {epoch+1} '.center(25,'-'))
             self.TrainLoop()
-            self.EvaluationLoop()
-
-        return self.Model
+            score = self.EvaluationLoop()
+            
+            if BestScore < score:
+                BestParameters = deepcopy(self.Model.state_dict())
+                BestScore = score
+        print(f'Best Score: {(BestScore*100):>0.1f}%')
+        del self.Model
+        
+        BestModel = self.ModelArchitecture()
+        BestModel.load_state_dict(BestParameters)
+        return BestModel.to(Device)
 
     def TrainLoop(
             self,
@@ -301,16 +310,22 @@ class NeuralNetworTrainer:
 
     def EvaluationLoop(
             self,
-        ):
+        ) -> float:
         """
         Method for evaluating `self.Model` during 
         after a epoch with `self.EvaluationDataLoader`
+
+        Return
+        ------
+        Score: float
+            Evaluation of the model using `self.Metric`
         """
 
         self.Model.eval()
         NumBatches = len(self.EvaluationDataLoader)
         TestLoss = 0
 
+        self.Metric.reset()
         with no_grad():
             for data_test in self.EvaluationDataLoader:
                 instance_X , label_y = data_test[0].to(self.Device) , data_test[1].to(self.Device)
@@ -321,5 +336,7 @@ class NeuralNetworTrainer:
                 self.Metric.update(pred_labels.argmax(1),label_y)
 
         TestLoss /= NumBatches
-        print(f"Test Error: \nF1: {(self.Metric.compute()*100):>0.1f}%, Avg loss: {TestLoss:>8f} \n")
-        self.Metric.reset() 
+        ScoreMetric = self.Metric.compute()
+        print(f"Test Error: \nScore: {(ScoreMetric*100):>0.1f}%, Avg loss: {TestLoss:>8f} \n")
+        
+        return ScoreMetric
