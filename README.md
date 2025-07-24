@@ -39,6 +39,18 @@ This phenomenon can be illustrated by considering two families that have totally
 From the EDA it is concluded that overweight and obesity are conditions that can not only be classified based on one factor or metric, but that there are others that allow us to better define the specific condition of an individual. The use of information regarding BMI and family history of overweight allows a good description of the level of obesity of a person, but if their physical activity and eating habits are added, this level and the recommendations to improve the quality of life of the individual can be specified.
 
 
+## Models
+In the notebooks named `MachineLearning.*` and `NeuralNetwork.*` found in [Models](./Models/), both in their Jupyter and Marimo versions, the procedure and decisions made for the definition (creation), training, and selection of the models are further developed.
+
+First, the entire dataset was divided into train, evaluation, and test using $64\%$, $16\%$, and $20\%$ of the instances, respectively, for each dataset. This procedure can be found in [SplitDataset.py](./Models/SplitDataset.py).
+
+For the ML models, [scikit-learn classifiers](https://scikit-learn.org/stable/supervised_learning.html) were used, specifically: Logistic Regression, Random Forest, Support Vector Machine, and AdaBoost. These models were chosen to generate diversity in ML classification techniques and methods and to create a more robust comparison between the results generated.
+
+Optuna was used for fine-tuning of hyperparameters of the ML models, which yielded good results and evaluations using the F1 metric (with scores greater than $0.9$), used due to the imbalance in the dataset shown in [Exploratory Data Analysis](#exploratory-data-analysis).
+
+PyTorch functionalities and classes were used for the neural network (model NN). Small topologies (architectures) with few layers and neurons were chosen in order to achieve higher quality training, given that the instances for this were limited. This procedure achieved evaluation scores (using the F1 metric) comparable to those obtained by ML models.
+
+
 ## Technologies
 * [Python](https://www.python.org/)
   * [marimo](https://marimo.io/)
@@ -49,6 +61,8 @@ From the EDA it is concluded that overweight and obesity are conditions that can
   * [SciPy](https://scipy.org/)
   * [statsmodels](https://www.statsmodels.org/stable/index.html)
   * [scikit-learn](https://scikit-learn.org/stable/)
+  * [PyTorch](https://pytorch.org/)
+  * [Optuna](https://optuna.org/)
 
 
 ## References
