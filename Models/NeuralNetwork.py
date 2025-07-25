@@ -3,9 +3,7 @@ import marimo
 __generated_with = "0.14.12"
 app = marimo.App()
 
-
-@app.cell
-def _():
+with app.setup:
     # Importing auxiliar libraries
 
     import marimo as mo
@@ -22,22 +20,10 @@ def _():
     # Importing Functions and Utils
 
     import SourceModels as src
-    return (
-        Dataset,
-        Tensor,
-        device,
-        is_available,
-        mo,
-        nn,
-        optim,
-        partial,
-        pd,
-        src,
-    )
 
 
 @app.cell
-def _(device, is_available, src):
+def _():
     # Defining useful variables
 
     PATH = './Models/'
@@ -51,41 +37,41 @@ def _(device, is_available, src):
 
 
 @app.cell
-def _(mo):
-    mo.md(r"# Neural Network")
+def _():
+    mo.md(r"""# Neural Network""")
     return
 
 
 @app.cell
-def _(mo):
+def _():
     mo.md(
         r"""
-        This notebook contains the procedure and decisions taken to create a neural network using [PyTorch](https://pytorch.org/) for the classification of the obesity level of patients based on their lifestyle habits.
-    
-        In section [1. Load Dataset](#1-load-dataset) the training and evaluation datasets of the model are loaded making use of the functionalities offered by PyTorch.
-    
-        In section [2. Model Architecture](#2-model-architecture) the neural network for the classifier is defined, with a focus on being a simple and small network but capable of learning to classify obesity levels correctly.
-    
-        Finally, in section [3. Model Training](#3-model-training) the parameters (weights and bias) of the model defined in the previous section are optimized using the optimizer [Adam](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html) and [CrossEntropyLoss](https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html) as loss function.
-        """
+    La presnta libreta contiene el procedimiento y decisiones tomadas para crear una red neuronal usando [PyTorch](https://pytorch.org/) para la clasificación del nivel de obesidad de los pacientes en base a sus hábitos de vida. 
+
+    En la sección [1. Load Dataset](#1-load-dataset) se carga los datasets de entrenamiento y evaluación del modelo haceiendo uso de las funcionalidades que ofrece PyTorch. 
+
+    En la sección [2. Model Architecture](#2-model-architecture) se define la red neuronal para el clasificador, dando un efoque a ser una red simple y pequeña pero que sea capaz de aprender a clasificar los niveles de obesidad correctamente.
+
+    Por último, en la sección [3. Model Training](#3-model-training) se optimizan los parámetros (pesos y bias) del modelo definido en la sección anterior usando el optimizador [Adam](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html) y [CrossEntropyLoss](https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html) como función de pérdida.
+    """
     )
     return
 
 
 @app.cell
-def _(mo):
-    mo.md(r"# 1. Load Dataset")
+def _():
+    mo.md("""# 1. Load Dataset""")
     return
 
 
 @app.cell
-def _(mo):
-    mo.md(r"Subclassing of [`Dataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.Dataset) is used to load the dataset so that it can be compatible with the neural networks in PyTorch. The [`DataLoader`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) used to train and evaluate the models are created in the `Trainer`. When loading the dataset, no normalization or scaling transformation is applied to the dataset.")
+def _():
+    mo.md(r"""Subclassing of [`Dataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.Dataset) is used to load the dataset so that it can be compatible with the neural networks in PyTorch. The [`DataLoader`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) used to train and evaluate the models are created in the `Trainer`. When loading the dataset, no normalization or scaling transformation is applied to the dataset.""")
     return
 
 
 @app.cell
-def _(PATH, pd, src):
+def _(PATH):
     # Splitting features 
 
     DatasetFilename = PATH + 'Dataset_{}.csv'
@@ -99,7 +85,7 @@ def _(PATH, pd, src):
 
 
 @app.cell
-def _(Dataset, DatasetFilename, Features, Target, src):
+def _(DatasetFilename, Features, Target):
     # Loading datasets
 
     Dataset_Train: Dataset = None
@@ -114,67 +100,65 @@ def _(Dataset, DatasetFilename, Features, Target, src):
 
 
 @app.cell
-def _(mo):
-    mo.md(r"# 2. Model Architecture")
+def _():
+    mo.md(r"""# 2. Model Architecture""")
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    mo.md(r"""It makes use of a simple architecture with two hidden layers of $40$ and $25$ neurons, respectively, with `ReLU` activation functions.""")
+    return
+
+
+@app.class_definition
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        """
+        Neural network architecture for 
+        predicting the obesity level of 
+        a person
+        """
+
+        super().__init__()
+
+        self.NN = nn.Sequential(
+            nn.Linear(21,40),
+            nn.ReLU(),
+            nn.Linear(40,25),
+            nn.ReLU(),
+            nn.Linear(25,7),
+        )
+
+    def forward(
+            self,
+            Instance_X: Tensor
+        ) -> Tensor:
+
+        Logits = self.NN(Instance_X)
+        return Logits
+
+
+@app.cell
+def _():
+    mo.md(r"""# 3. Model Training""")
     return
 
 
 @app.cell
-def _(mo):
-    mo.md(r"It makes use of a simple architecture with two hidden layers of $40$ and $25$ neurons, respectively, with `ReLU` activation functions.")
-    return
-
-
-@app.cell
-def _(Tensor, nn):
-    class NeuralNetwork(nn.Module):
-        def __init__(self):
-            """
-            Neural network architecture for 
-            predicting the obesity level of 
-            a person
-            """
-
-            super().__init__()
-
-            self.NN = nn.Sequential(
-                nn.Linear(21,40),
-                nn.ReLU(),
-                nn.Linear(40,25),
-                nn.ReLU(),
-                nn.Linear(25,7),
-            )
-
-        def forward(
-                self,
-                Instance_X: Tensor
-            ) -> Tensor:
-
-            Logits = self.NN(Instance_X)
-            return Logits
-    return (NeuralNetwork,)
-
-
-@app.cell
-def _(mo):
-    mo.md(r"# 3. Model Training")
-    return
-
-
-@app.cell
-def _(mo):
+def _():
     mo.md(
         r"""
-        For the training of the neural network it was decided to use the optimizer [Adam](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html), due to its robustness generated by its adaptive learning mechanisms, with a learning rate of $0.01$ and $50$ epochs with batch size of $32$ because there are not enough training instances (this setting was made by means of tests and empirical rules). 
-    
-        For determining the best model, the F1 metric with weighted average is used, due to the slight imbalance of the dataset with respect to the target (`NObeyesdad`), as described in the [Exploratory Data Analysis](../ExploratoryDataAnalysis/ExploratoryDataAnalysis.py). Finally, the best model obtained during training is saved.
-        """
+    For the training of the neural network it was decided to use the optimizer [Adam](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html), due to its robustness generated by its adaptive learning mechanisms, with a learning rate of $0.01$ and $50$ epochs with batch size of $32$ because there are not enough training instances (this setting was made by means of tests and empirical rules). 
+
+    Para determinar el mejor modelo se hace uso de la métrica F1 con weighted average, esto debido al ligero imbalance del dataset respecto al target (`NObeyesdad`), como fue descrito en el
+    """
     )
     return
 
 
 @app.cell
-def _(nn, optim, partial, src):
+def _():
     # Defining optimizer, loss function and metric
 
     _LearningRate = 1e-2
@@ -186,7 +170,7 @@ def _(nn, optim, partial, src):
 
 
 @app.cell
-def _(LossFunction, NeuralNetwork, Optimizer, src):
+def _(LossFunction, Optimizer):
     # Initializing trainer of Neural Network
 
     NN_Trainer = src.NeuralNetworTrainer(
@@ -199,8 +183,8 @@ def _(LossFunction, NeuralNetwork, Optimizer, src):
 
 @app.cell
 def _(
-    Dataset_Evaluation: "Dataset",
-    Dataset_Train: "Dataset",
+    Dataset_Evaluation: Dataset,
+    Dataset_Train: Dataset,
     MetricFunction,
     NN_Trainer,
     TORCH_DEVICE,
