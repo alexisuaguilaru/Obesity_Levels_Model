@@ -31,10 +31,11 @@ def _(device, is_available, src):
 
     PATH = './Models/'
     PATH_SAVE = PATH + 'SaveModels/'
+    DatasetFilename = PATH + 'Dataset_{}.csv'
 
     NUM_JOBS = src.GetNumJobs()
     TORCH_DEVICE = device('cuda' if is_available() else 'cpu')
-    return NUM_JOBS, PATH, PATH_SAVE, TORCH_DEVICE
+    return DatasetFilename, NUM_JOBS, PATH, PATH_SAVE, TORCH_DEVICE
 
 
 @app.cell
@@ -80,11 +81,11 @@ def _(Dataset_Evaluation: "pd.DataFrame", src):
 
     NumericalFeatures , CategoricalFeatures , Target = src.SplitFeatures(Dataset_Evaluation)
     Features = [*NumericalFeatures,*CategoricalFeatures]
-    return
+    return Features, Target
 
 
 @app.cell
-def _(Pipeline):
+def _():
     # Defining model names and containers
 
     MLModelsName = [
@@ -93,15 +94,16 @@ def _(Pipeline):
         'SVM',
         'AdaBoost',
     ]
-    MLModels: list[Pipeline] = []
 
     NNModelName = 'NN'
-    return MLModels, MLModelsName, NNModelName
+    return MLModelsName, NNModelName
 
 
 @app.cell
-def _(MLModels: "list[Pipeline]", MLModelsName, NUM_JOBS, PATH_SAVE, src):
+def _(MLModelsName, NUM_JOBS, PATH_SAVE, Pipeline, src):
     # Loading ML models
+
+    MLModels: list[Pipeline] = []
 
     for _model_name in MLModelsName:
         _ml_model = src.LoadModelML(PATH_SAVE,_model_name)
@@ -109,7 +111,7 @@ def _(MLModels: "list[Pipeline]", MLModelsName, NUM_JOBS, PATH_SAVE, src):
             _step_estimator.n_jobs = NUM_JOBS*NUM_JOBS
 
         MLModels.append(_ml_model)
-    return
+    return (MLModels,)
 
 
 @app.cell
@@ -119,6 +121,55 @@ def _(NNModelName, PATH_SAVE, TORCH_DEVICE, nn, src):
     from NeuralNetwork import NeuralNetwork
 
     NNModel: nn.Module = src.LoadModelNN(PATH_SAVE,NNModelName).to(TORCH_DEVICE)
+    return (NNModel,)
+
+
+@app.cell
+def _(mo):
+    mo.md(r"# 2. Evaluation Dataset")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"")
+    return
+
+
+@app.cell
+def _(
+    Dataset_Evaluation: "pd.DataFrame",
+    Features,
+    MLModels: "list[Pipeline]",
+    Target,
+    src,
+):
+    _index = 3
+    src.EvaluateMLModel(
+        MLModels[_index],
+        Dataset_Evaluation,
+        Features,
+        Target,
+    ) , MLModels[_index]
+    return
+
+
+@app.cell
+def _(
+    DatasetFilename,
+    Features,
+    NNModel: "nn.Module",
+    TORCH_DEVICE,
+    Target,
+    src,
+):
+    src.EvaluateNNModel(
+        NNModel,
+        DatasetFilename.format('Evaluation'),
+        Features,
+        Target,
+        TORCH_DEVICE,
+    )
     return
 
 

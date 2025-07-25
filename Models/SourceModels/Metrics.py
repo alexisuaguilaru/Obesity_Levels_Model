@@ -39,6 +39,18 @@ def F1_NN(
     """
     Function for calculating F1 score of a 
     PyTorch model/nn.Module.
+
+    Parameters
+    ----------
+    NumClass: int
+        `num_clases` parameter of `torcheval.metrics.MulticlassF1Score`
+    Average: str
+        `average` parameter of `torcheval.metrics.MulticlassF1Score`
+
+    Return
+    ------
+    F1Metric: Callable
+        A object (instance) of `torcheval.metrics.MulticlassF1Score`
     """
 
     return MulticlassF1Score(num_classes=NumClass,average=Average)
