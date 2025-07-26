@@ -59,9 +59,9 @@ def PlotResults(
     Axes.set_xticks(range(len(TicksLabels)),TicksLabels,rotation=30)
 
     Axes.tick_params(axis='both',labelsize=15,width=0)
-    Axes.set_xlabel(Axes.get_xlabel(),size=16)
+    Axes.set_xlabel(Axes.get_xlabel(),size=17)
     Axes.set_ylabel('Score',size=17)
-    Axes.set_title(f'Results on the \n{TypeDataset} Dataset',size=24)
+    Axes.set_title(f'Results on\n{TypeDataset} Dataset',size=24)
 
     Axes.legend(fontsize=14)
 

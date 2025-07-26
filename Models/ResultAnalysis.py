@@ -17,6 +17,7 @@ def _():
     from torch.cuda import is_available
     import seaborn as sns
     import matplotlib.pyplot as plt
+    import numpy as np
 
     # Importing Functions and Utils
 
@@ -132,44 +133,65 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r"")
-    return
-
-
-@app.cell
-def _(
-    Dataset_Evaluation: "pd.DataFrame",
-    Features,
-    MLModels: "list[Pipeline]",
-    Target,
-    src,
-):
-    _index = 3
-    src.EvaluateMLModel(
-        MLModels[_index],
-        Dataset_Evaluation,
-        Features,
-        Target,
-    ) , MLModels[_index]
+    mo.md(
+        r"""
+        In the evaluation dataset, the performance of `Logistic Regression` allows it to act as a baseline for evaluating the other models. This shows how `SVM` does not perform significantly better, even considering that it uses nonlinear techniques to generate a feature space enriched by new relationships.
+    
+        On the other hand, models based on `Decision Trees`, `Random Forest` and `AdaBoost`, show the best performance when generalizing the classification of obesity levels. This can be explained by considering how they are created, since both methods attempt to learn the properties that characterize each class (obesity level) using their own mechanisms.
+    
+        Finally, the `Neural Network` shows average performance with a topology (architecture) that is neither very deep (two hidden layers) nor very large (the largest layer has 40 neurons), so there is still margin and potential for improvement. However, considering the topology itself, it reports acceptable scores that could be improved with a greater number of training instances.
+        """
+    )
     return
 
 
 @app.cell
 def _(
     DatasetFilename,
+    Dataset_Evaluation: "pd.DataFrame",
     Features,
+    MLModels: "list[Pipeline]",
+    MLModelsName,
     NNModel: "nn.Module",
     TORCH_DEVICE,
     Target,
     src,
 ):
-    src.EvaluateNNModel(
+    # Evaluating models on Evaluation Dataset
+
+    EvaluationResults = src.InitDataFrameResults()
+
+    for _model_name , _model in zip(MLModelsName,MLModels):
+        _result_scores = src.EvaluateMLModel(
+            _model,
+            Dataset_Evaluation,
+            Features,
+            Target,
+        )
+
+        EvaluationResults.loc[_model_name] = _result_scores
+
+    _result_scores = src.EvaluateNNModel(
         NNModel,
         DatasetFilename.format('Evaluation'),
         Features,
         Target,
         TORCH_DEVICE,
     )
+
+    EvaluationResults.loc['Neural Network'] = _result_scores
+    return (EvaluationResults,)
+
+
+@app.cell
+def _(EvaluationResults):
+    EvaluationResults
+    return
+
+
+@app.cell
+def _(EvaluationResults, src):
+    src.PlotResults(EvaluationResults,'Evaluation')
     return
 
 
